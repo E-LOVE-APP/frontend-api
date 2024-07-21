@@ -1,0 +1,8 @@
+.mypy_cache
+env
+venv
+.pyc
+db-app
+db-auth
+__pycache__
+.DS_Store

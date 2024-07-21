@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "e-love-frontend-api"
+version = "0.1.0"
+description = ""
+authors = ["paketoff <kekisreal228@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.111.1"
+uvicorn = "^0.30.3"
+python-dotenv = "^1.0.1"
+pydantic = "^2.8.2"
+pydantic-settings = "^2.3.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
