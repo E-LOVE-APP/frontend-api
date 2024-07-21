@@ -1,8 +1,8 @@
-````markdown
-# 💖 E-Love
 
-Welcome to **E-Love**! 🎮❤️ This app is designed to help young gamers who play online games like Valorant and Dota
-meet new people and find meaningful relationships.
+# 💖 E-Love (Backend)
+
+Welcome to **E-Love**! 🎮❤️ This app is designed to help young gamers who play online games like 
+Valorant and Dota meet new people and find meaningful relationships.
 
 ## 🚀 Getting Started
 
@@ -26,7 +26,7 @@ To install Poetry, follow these steps:
    ```sh
    curl -sSL https://install.python-poetry.org | python3 -
    ```
-````
+
 
 2. Or, using pip:
    ```sh
@@ -103,7 +103,7 @@ To use Taskfile:
 1. Define tasks in a `Taskfile.yml`:
 
    ```yaml
-   version: "3"
+   version: "0"
 
    tasks:
      run:
@@ -128,3 +128,4 @@ To use Taskfile:
 - **Poetry**: Dependency management and packaging tool for Python.
 - **Taskfile**: Simplifies running complex project-specific tasks.
 - **Dotenv**: Manage environment variables.
+
