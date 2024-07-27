@@ -17,3 +17,8 @@ tasks:
     cmds:
       - docker-compose up
     interactive: true
+
+  compose-down:
+    desc: "Stop the Docker containers using docker-compose"
+    cmds:
+      - docker-compose down

@@ -4,7 +4,9 @@ WORKDIR /app
 
 COPY pyproject.toml poetry.lock ./
 
-RUN pip install poetry && poetry install 
+#no-root is used for dependencies to be installed in the container without installing the project itself. 
+#It can fasten the build process and reduce the size of the final image.
+RUN pip install poetry && poetry install --no-root 
 
 COPY . /app
 
