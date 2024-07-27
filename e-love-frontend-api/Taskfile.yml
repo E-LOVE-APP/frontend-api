@@ -1,0 +1,19 @@
+version: "3"
+
+tasks:
+  build:
+    desc: "Build the Docker image"
+    cmds:
+      - docker build -t e-love-frontend-api .
+
+  run:
+    desc: "Run the Docker container"
+    cmds:
+      - docker run --env-file .env -p 8000:8000 e-love-frontend-api
+    interactive: true
+
+  compose-up:
+    desc: "Run the Docker container using docker-compose"
+    cmds:
+      - docker-compose up
+    interactive: true
