@@ -1,15 +1,18 @@
 version: "3"
 
+vars:
+  SERVICE_NAME: e-love-frontend-api
+
 tasks:
   build:
-    desc: "Build the Docker image"
+    desc: "Build the {{.SERVICE_NAME}} Docker image"
     cmds:
-      - docker build -t e-love-frontend-api .
+      - docker build -t {{.SERVICE_NAME}} .
 
   run:
-    desc: "Run the Docker container"
+    desc: "Run the Docker {{.SERVICE_NAME}} container"
     cmds:
-      - docker run --env-file .env -p 8000:8000 e-love-frontend-api
+      - docker run --env-file .env -p 8000:8000 {{.SERVICE_NAME}}
     interactive: true
 
   compose-up:
