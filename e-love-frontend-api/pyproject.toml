@@ -14,6 +14,27 @@ pydantic = "^2.8.2"
 pydantic-settings = "^2.3.4"
 
 
+[tool.poetry.group.dev.dependencies]
+black = "^24.4.2"
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
