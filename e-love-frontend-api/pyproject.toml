@@ -12,6 +12,8 @@ uvicorn = "^0.30.3"
 python-dotenv = "^1.0.1"
 pydantic = "^2.8.2"
 pydantic-settings = "^2.3.4"
+sqlalchemy = "^2.0.32"
+alembic = "^1.13.2"
 
 
 [build-system]
