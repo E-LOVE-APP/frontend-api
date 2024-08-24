@@ -1,7 +1,6 @@
-
 # 💖 E-Love (Backend)
 
-Welcome to **E-Love**! 🎮❤️ This app is designed to help young gamers who play online games like 
+Welcome to **E-Love**! 🎮❤️ This app is designed to help young gamers who play online games like
 Valorant and Dota meet new people and find meaningful relationships.
 
 ## 🚀 Getting Started
@@ -33,7 +32,15 @@ by handling dependencies in a lock file, managing virtual environments, and simp
    cd e-love-frontend-api
    ```
 
-3. Run dependencies installation & other stuff in Docker using Taskfile:
+3. Run dependencies installation & other stuff using Taskfile:
+
+   ```sh
+   poetry shell
+   ```
+
+   ```sh
+   poetry install
+   ```
 
    ```sh
    task compose-up
@@ -45,7 +52,7 @@ To run the app in development mode:
 
 1. Open your Docker Desktop and search for e-love-frontend-api container.
 
-2. Run e-love-frontend-api container. 
+2. Run e-love-frontend-api container.
 
 This will start the FastAPI development server on `http://localhost:8000`.
 
@@ -84,4 +91,3 @@ To install Taskfile:
 - **Taskfile**: Simplifies running complex project-specific tasks.
 - **Dotenv**: Manage environment variables.
 - **Docker**: Manage microservices environment, etc.
-
