@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     app_version: str
     app_running_env: str
     greeting_message: str
+    database_url: str
 
     class Config:
         env_file = os.getenv('APP_ENV_PATH')
