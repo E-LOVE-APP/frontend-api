@@ -18,10 +18,17 @@ tasks:
   compose-up:
     desc: "Run the Docker container using docker-compose"
     cmds:
-      - docker-compose up
+      - docker-compose up --build
     interactive: true
 
   compose-down:
     desc: "Stop the Docker containers using docker-compose"
     cmds:
       - docker-compose down
+
+  docker-clean:
+    desc: "Stop Docker containers and clean up volumes, networks, and images"
+    cmds:
+      - docker-compose down --volumes --rmi all --remove-orphans
+      - docker system prune -f
+      - docker volume prune -f

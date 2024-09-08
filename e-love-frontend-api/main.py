@@ -12,7 +12,7 @@ app = FastAPI(
     version=settings.app_version,
 )
 
-# Test connection to the database
+# Test connection to the database. Doesn't fully work
 def test_db_connection():
     """Test database connection"""
     try:
