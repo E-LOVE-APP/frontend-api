@@ -4,6 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["paketoff <kekisreal228@gmail.com>"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -14,6 +15,8 @@ pydantic = "^2.8.2"
 pydantic-settings = "^2.3.4"
 sqlalchemy = "^2.0.32"
 alembic = "^1.13.2"
+pymysql = "^1.1.1"
+cryptography = "^43.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
