@@ -9,14 +9,23 @@ Valorant and Dota meet new people and find meaningful relationships.
 
 Make sure you have the following installed for this backend service:
 
-- Python (version >= 3.10)
+- Python Interpreter (version 3.10)
 - Docker installed & Docker Desktop application
 - Poetry
+- Taskfile
 
 ### Why Use Poetry?
 
 Poetry is a dependency management and packaging tool for Python. It provides a more comprehensive and user-friendly approach compared to pip,
 by handling dependencies in a lock file, managing virtual environments, and simplifying the publishing process.
+
+### Taskfile
+
+Taskfile is a tool for defining and running project-specific tasks. It simplifies complex command sequences into simple task invocations.
+
+To install Taskfile:
+
+Install Taskfile using the official installation method - `https://taskfile.dev/`
 
 ### Installation
 
@@ -46,6 +55,8 @@ by handling dependencies in a lock file, managing virtual environments, and simp
    task compose-up
    ```
 
+   !!! FYI - ALWAYS USE TERMINAL WITH VENV - DO NOT FORGET TO USE POETRY SHELL COMMAND !!!
+
 ### Development
 
 To run the app in development mode:
@@ -54,7 +65,7 @@ To run the app in development mode:
 
 2. Run e-love-frontend-api container.
 
-This will start the FastAPI development server on `http://localhost:8000`.
+This will start the FastAPI development server on `http://localhost:8080` or `http://0.0.0.0:8080`.
 
 ### Building for Production
 
@@ -71,17 +82,6 @@ To build the app for production:
 ```sh
 # Add instructions here when ready
 ```
-
-### Taskfile
-
-Taskfile is a tool for defining and running project-specific tasks. It simplifies complex command sequences into simple task invocations.
-
-To install Taskfile:
-
-1. Install Taskfile using the official installation method:
-   ```sh
-   # Add instructions here when ready
-   ```
 
 ## 🛠️ Technologies Used (add another later)
 
