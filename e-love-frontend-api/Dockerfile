@@ -18,7 +18,7 @@ COPY pyproject.toml poetry.lock ./
 # Установка зависимостей с помощью Poetry
 # config virtualenvs.create true - создает вирт. окр. среду для выполнения poetry в консоли docker тоже в env, как мы это используем прямо сейчас
 # по другому оно работать не будет - будет выдавать ошибку что библиотек не существует, потому-что вирт. окружение не было создано. (по сути это аналог команды poetry shell для докера)
-RUN poetry config virtualenvs.create true && poetry install --no-root
+RUN poetry config virtualenvs.path --unset && poetry config virtualenvs.in-project true && poetry config --list && poetry install --no-root --no-interaction --no-ansi
 
 # --chown=1000:1000 - специальный паараметр команды который добавляет расширения для докер-файлов чтобы их нормально распознала винда
 # однако, ее можно будет даже и не использовать (я гляну позже)
@@ -26,5 +26,13 @@ COPY --chown=1000:1000 . /app
 
 EXPOSE 8000
 
-# Запуск сервера
-CMD ["poetry", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# CMD ["bash", "-c", "\
+#     if ! poetry run python -c 'import uvicorn' &>/dev/null; then \
+#         echo 'Virtual environment seems broken. Reinstalling dependencies...'; \
+#         poetry install --no-root; \
+#     fi; \
+#     poetry run uvicorn main:app --host 0.0.0.0 --port 8000 --reload"]
+
+
+CMD ["bash", "-c", "poetry run uvicorn main:app --host 0.0.0.0 --port 8000 --reload"]
+

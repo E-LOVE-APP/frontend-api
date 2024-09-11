@@ -1,41 +1,75 @@
 """Database configuration."""
-# database.py
-from sqlalchemy import create_engine
+
+from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
 from configuration.config import settings
-from dotenv import load_dotenv
-import os
 import logging
-logging.basicConfig()
-logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+import colorlog
 
-# load_dotenv(dotenv_path="/app/docker/db-app/db.env")
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+
+formatter = colorlog.ColoredFormatter(
+    "%(log_color)s%(levelname)s - %(message)s",
+    log_colors={
+        "DEBUG": "cyan",
+        "INFO": "green",
+        "WARNING": "yellow",
+        "ERROR": "red",
+        "CRITICAL": "bold_red",
+    },
+)
+console_handler.setFormatter(formatter)
+
+logger.addHandler(console_handler)
 
 DATABASE_URL = settings.database_url
 
 if not DATABASE_URL:
-    logging.error("DATABASE_URL is not set in environment variables.")
+    logger.error("DATABASE_URL is not set in environment variables.")
     raise ValueError("DATABASE_URL must be set in environment variables.")
 
+# Настройка SQLAlchemy
 try:
     engine = create_engine(DATABASE_URL)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    logger.info("SQLAlchemy engine created successfully.")
 except Exception as e:
-    logging.error(f"Failed to connect to database: {e}")
+    logger.error(f"Failed to create SQLAlchemy engine: {e}")
     raise
 
 Base = declarative_base()
+
+
+# Проверка подключения при загрузке конфигурации
+def check_db_connection():
+    """Проверяет подключение к базе данных при загрузке конфигурации"""
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+        logger.info("Connected to the database successfully.")
+    except Exception as e:
+        logger.error(f"Failed to connect to the database: {e}")
+        raise
+
+
+logger.info("Starting database connection check...")
+
+check_db_connection()
+
 
 @contextmanager
 def get_db_session():
     db = SessionLocal()
     try:
-        # TODO: check why do we use yield here!!
         yield db
     except Exception as e:
-        logging.error(f"Database session error: {e}")
+        logger.error(f"Database session error: {e}")
         raise
     finally:
         db.close()

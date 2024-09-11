@@ -2,13 +2,13 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Start Poetry Shell",
+      "label": "Check and Start Poetry Shell",
       "type": "shell",
       "command": "${config:terminal.integrated.shell.windows}",
       "args": [
         "${config:terminal.integrated.shellArgs.windows}",
         "-c",
-        "cd e-love-frontend-api && poetry shell"
+        "cd e-love-frontend-api/scripts; python check_venv.py; cd ..; if (!(Test-Path .venv) -or !(poetry check)) { Write-Host 'Venv is broken, reinstalling dependencies...'; poetry install }; poetry shell"
       ],
       "problemMatcher": [],
       "group": {
@@ -17,15 +17,24 @@
       },
       "windows": {
         "command": "powershell",
-        "args": ["-Command", "cd e-love-frontend-api; poetry shell"]
+        "args": [
+          "-Command",
+          "cd e-love-frontend-api/scripts; python check_venv.py; cd ..; if (!(Test-Path .venv) -or !(poetry check)) { Write-Host 'Venv is broken, reinstalling dependencies...'; poetry install }; poetry shell"
+        ]
       },
       "linux": {
         "command": "bash",
-        "args": ["-c", "cd e-love-frontend-api && poetry shell"]
+        "args": [
+          "-c",
+          "cd e-love-frontend-api/scripts && python check_venv.py && cd .. && if [ ! -d .venv ] || ! poetry check; then echo 'Venv is broken, reinstalling dependencies...'; poetry install; poetry shell"
+        ]
       },
       "osx": {
         "command": "bash",
-        "args": ["-c", "cd e-love-frontend-api && poetry shell"]
+        "args": [
+          "-c",
+          "cd e-love-frontend-api/scripts && python check_venv.py && cd .. && if [ ! -d .venv ] || ! poetry check; then echo 'Venv is broken, reinstalling dependencies...'; poetry install; poetry shell"
+        ]
       }
     }
   ]
