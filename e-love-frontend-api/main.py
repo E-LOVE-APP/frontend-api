@@ -5,28 +5,21 @@ from fastapi import FastAPI
 from configuration.config import settings
 from configuration.database import engine, Base, get_db_session
 from sqlalchemy import text
+from easter_eggs.greeting import ascii_kitty, ascii_painter, ascii_hello_devs
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 
 # Create the database tables
 Base.metadata.create_all(bind=engine)
+
+print(ascii_hello_devs)
+print(ascii_painter)
 
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
 )
-
-
-@app.on_event("startup")
-async def startup_event():
-    try:
-        with get_db_session() as db:
-            db.execute(text("SELECT 1"))
-        logger.info("Connected to the database successfully")
-    except Exception as e:
-        logger.error(f"Failed to connect to database: {e}")
-        raise
 
 
 # Test routes. We will remove these later

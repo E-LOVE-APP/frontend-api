@@ -21,6 +21,7 @@ cryptography = "^43.0.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"
+colorlog = "^6.8.2"
 
 [tool.black]
 line-length = 88
