@@ -1,4 +1,5 @@
 """Database configuration."""
+
 # database.py
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -8,12 +9,14 @@ from configuration.config import settings
 from dotenv import load_dotenv
 import os
 import logging
+
 logging.basicConfig()
-logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
 
 # load_dotenv(dotenv_path="/app/docker/db-app/db.env")
 
 DATABASE_URL = settings.database_url
+ALEMBIC_DATABASE_URL = settings.alembic_database_url
 
 if not DATABASE_URL:
     logging.error("DATABASE_URL is not set in environment variables.")
@@ -27,6 +30,7 @@ except Exception as e:
     raise
 
 Base = declarative_base()
+
 
 @contextmanager
 def get_db_session():

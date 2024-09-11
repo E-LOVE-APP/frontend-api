@@ -1,8 +1,13 @@
 """This is the main file for our application"""
 
+import logging
 from fastapi import FastAPI
 from configuration.config import settings
 from configuration.database import engine, Base, get_db_session
+from sqlalchemy import text
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Create the database tables
 Base.metadata.create_all(bind=engine)
@@ -12,16 +17,17 @@ app = FastAPI(
     version=settings.app_version,
 )
 
-# Test connection to the database. Doesn't fully work
-def test_db_connection():
-    """Test database connection"""
+
+@app.on_event("startup")
+async def startup_event():
     try:
         with get_db_session() as db:
-            db.execute("SELECT 1")
+            db.execute(text("SELECT 1"))
+        logger.info("Connected to the database successfully")
     except Exception as e:
-        print(f"Failed to connect to database: {e}")
+        logger.error(f"Failed to connect to database: {e}")
         raise
-    print("Connected to the database successfully")
+
 
 # Test routes. We will remove these later
 @app.get("/hello")
@@ -39,6 +45,3 @@ async def config_info():
         "app_running_env": settings.app_running_env,
         "greeting_message": settings.greeting_message,
     }
-
-if __name__ == "__main__":
-    test_db_connection()
