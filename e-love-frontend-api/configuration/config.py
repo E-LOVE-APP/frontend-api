@@ -15,7 +15,6 @@ class Settings(BaseSettings):
     app_running_env: str
     greeting_message: str
     database_url: str
-    alembic_database_url: Optional[str]
 
     class Config:
         env_file = os.getenv("APP_ENV_PATH")
