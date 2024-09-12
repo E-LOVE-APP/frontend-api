@@ -17,6 +17,7 @@ sqlalchemy = "^2.0.32"
 alembic = "^1.13.2"
 pymysql = "^1.1.1"
 cryptography = "^43.0.1"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 
 
 [tool.poetry.group.dev.dependencies]
