@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, DateTime
 from sqlalchemy.orm import relationship
-from base import BaseModel
+from ..base import BaseModel
 
 
 class Categories(BaseModel):

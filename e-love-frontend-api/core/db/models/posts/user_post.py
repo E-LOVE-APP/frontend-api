@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy.orm import relationship
-from base import BaseModel
+from ..base import BaseModel
 
 
 class UserPost(BaseModel):

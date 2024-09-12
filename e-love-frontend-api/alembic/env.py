@@ -5,10 +5,10 @@ from sqlalchemy import pool
 from configuration.database import engine, Base, DATABASE_URL
 
 # database models
-from core.db.models.users import User
-from core.db.models.audit_logs import AuditLogs
-from core.db.models.categories import Categories
-from core.db.models.posts import UserPost
+from core.db.models.users.users import User
+from core.db.models.audit_logs.audit_logs import AuditLogs
+from core.db.models.categories.categories import Categories
+from core.db.models.posts.user_post import UserPost
 
 
 from alembic import context

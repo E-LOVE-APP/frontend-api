@@ -10,8 +10,8 @@ from configuration.database import Base
 """ Basic datatable model  """
 
 
-@as_declarative
-class BaseModel(Base):
+@as_declarative()
+class BaseModel:
     __abstract__ = True
 
     id = Column(

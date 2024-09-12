@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 from passlib.hash import bcrypt
-from base import BaseModel
+from ..base import BaseModel
 
 
 class User(BaseModel):
