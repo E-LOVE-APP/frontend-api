@@ -42,6 +42,7 @@ IMPORTANT INFO
 2nd and 3d parts below were automated by .vscode task-script. 
 So please start our application in VSCODE from ``` frontend-api ``` folder.
 If this task hasn't worked, please use the next steps below this section.
+(FYI, composing containers task isn't included in the script)
 
 ***
 
