@@ -35,7 +35,9 @@ Install Taskfile using the official installation method - `https://taskfile.dev/
    git clone https://github.com/yourusername/e-love.git
    ```
 
-*** IMPORTANT INFO
+*** 
+
+IMPORTANT INFO
 
 2nd and 3d parts below were automated by .vscode task-script. 
 So please start our application in VSCODE from ``` frontend-api ``` folder.
