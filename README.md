@@ -35,6 +35,14 @@ Install Taskfile using the official installation method - `https://taskfile.dev/
    git clone https://github.com/yourusername/e-love.git
    ```
 
+*** IMPORTANT INFO
+
+2nd and 3d parts below were automated by .vscode task-script. 
+So please start our application in VSCODE from ``` frontend-api ``` folder.
+If this task hasn't worked, please use the next steps below this section.
+
+***
+
 2. Navigate to the project directory:
 
    ```sh
@@ -55,7 +63,9 @@ Install Taskfile using the official installation method - `https://taskfile.dev/
    task compose-up
    ```
 
-   !!! FYI - ALWAYS USE TERMINAL WITH VENV - DO NOT FORGET TO USE POETRY SHELL COMMAND !!!
+### More detailed instruction
+
+If you're having problems this with installation, please check our docs installation page by this link - https://www.notion.so/Correct-application-startup-using-Docker-venv-e2770cf1799e4a62b23f6f3637e23b45?pvs=4 
 
 ### Development
 
