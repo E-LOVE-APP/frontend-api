@@ -1,0 +1,34 @@
+version: "3"
+
+vars:
+  SERVICE_NAME: e-love-frontend-api
+
+tasks:
+  build:
+    desc: "Build the {{.SERVICE_NAME}} Docker image"
+    cmds:
+      - docker build -t {{.SERVICE_NAME}} .
+
+  run:
+    desc: "Run the Docker {{.SERVICE_NAME}} container"
+    cmds:
+      - docker run --env-file .env -p 8000:8000 {{.SERVICE_NAME}}
+    interactive: true
+
+  compose-up:
+    desc: "Run the Docker container using docker-compose"
+    cmds:
+      - docker-compose up --build
+    interactive: true
+
+  compose-down:
+    desc: "Stop the Docker containers using docker-compose"
+    cmds:
+      - docker-compose down
+
+  docker-clean:
+    desc: "Stop Docker containers and clean up volumes, networks, and images"
+    cmds:
+      - docker-compose down --volumes --rmi all --remove-orphans
+      - docker system prune -f
+      - docker volume prune -f

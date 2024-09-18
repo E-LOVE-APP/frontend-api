@@ -1,0 +1,28 @@
+{
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.ipynb_checkpoints": true,
+    "**/venv": true,
+    "**/.venv": true
+  },
+  "python.analysis.typeCheckingMode": "basic",
+  "editor.formatOnSaveMode": "file",
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": true,
+  "python.linting.pylintArgs": [
+    "--extension-pkg-whitelist=pydantic",
+    "--disable=C0303",
+    "--disable=protected-access",
+    "--max-line-length=100"
+  ],
+  "editor.rulers": [100],
+  "pylint.args": ["--ignore-long-lines", "--max-line-length=100"],
+  "python.linting.mypyEnabled": false,
+  "python.linting.pycodestyleEnabled": false,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": false,
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true
+  }
+}
