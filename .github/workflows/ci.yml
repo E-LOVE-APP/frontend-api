@@ -78,6 +78,8 @@ jobs:
             --name fe-api-container \
             -p 8080:8000 \
             --env DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            -v ${{ github.workspace }}/e-love-frontend-api:/app \
+            -w /app \
             myapp:latest
 
       - name: Check Docker container logs
@@ -91,7 +93,6 @@ jobs:
         with:
           time: "180"
           url: "http://localhost:8080/"
-        continue-on-error: true
 
       - name: Test application response
         run: |
