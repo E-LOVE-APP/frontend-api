@@ -75,9 +75,9 @@ jobs:
             myapp:latest
 
       - name: Wait for the app to be ready
-        uses: jakejarvis/wait-action@v1
+        uses: jakejarvis/wait-action@v0.1.0
         with:
-          timeout: "30"
+          time: "30"
           url: "http://localhost:8080/"
 
       - name: Test application response
