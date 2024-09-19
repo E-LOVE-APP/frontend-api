@@ -31,6 +31,7 @@ faker = "^28.4.1"
 isort = "^5.13.2"
 flake8 = "^7.1.1"
 mypy = "^1.11.2"
+pre-commit = "^3.4.0"
 
 [tool.black]
 line-length = 88
@@ -39,15 +40,99 @@ include = '\.pyi?$'
 exclude = '''
 /(
     \.git
+  | \.hg
+  | \.svn
   | \.mypy_cache
-  | \.tox
+  | \.pytest_cache
   | \.venv
-  | _build
-  | buck-out
+  | \.env
+  | \.tox
+  | \.eggs
+  | \.idea
+  | \.vscode
   | build
   | dist
-)/
+  | htmlcov
+  | .*/migrations
+  | alembic/versions
+  | __pycache__
+  | node_modules
+  | tmp
+  | temp
+  | data
+  | datasets
+  | .*\.egg-info
+  | \.cache
+  | easter_eggs
+)/'''
+
+[tool.flake8]
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    ".venv",
+    ".env",
+    "alembic/versions",
+    "migrations",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".idea",
+    ".vscode",
+    "node_modules",
+    "tmp",
+    "temp",
+    "data",
+    "datasets",
+    "easter_eggs"
+]
+
+[tool.isort]
+line_length = 88
+skip = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    ".venv",
+    ".env",
+    "alembic/versions",
+    "migrations",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".idea",
+    ".vscode",
+    "node_modules",
+    "tmp",
+    "temp",
+    "data",
+    "datasets",
+    "easter_eggs"
+]
+
+[tool.mypy]
+exclude = '''
+(\.git|
+__pycache__|
+build|
+dist|
+\.venv|
+\.env|
+alembic/versions|
+migrations|
+\.mypy_cache|
+\.pytest_cache|
+\.idea|
+\.vscode|
+node_modules|
+tmp|
+temp|
+data|
+easter_eggs|
+datasets)
 '''
+
 
 [build-system]
 requires = ["poetry-core"]
