@@ -53,6 +53,7 @@ jobs:
         run: |
           poetry run isort --check-only .
 
+      # Type checks & lint check. Too buzzkill stuff for now. Will be uncommented and injected here later.
       # - name: Lint code with flake8
       #   working-directory: e-love-frontend-api
       #   run: |
@@ -80,18 +81,10 @@ jobs:
             myapp:latest
 
       - name: Wait for the app to be ready
-        run: |
-          for i in {1..10}; do
-            if curl -f http://localhost:8080/; then
-              echo "App is ready!"
-              exit 0
-            else
-              echo "Waiting for the app to be ready..."
-              sleep 6
-            fi
-          done
-          echo "App did not become ready in time."
-          exit 1
+        uses: jakejarvis/wait-action@v0.1.0
+        with:
+          time: "30"
+          url: "http://localhost:8080/"
 
       - name: Test application response
         run: |
