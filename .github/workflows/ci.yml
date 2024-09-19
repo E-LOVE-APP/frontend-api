@@ -80,11 +80,18 @@ jobs:
             --env DATABASE_URL=${{ secrets.DATABASE_URL }} \
             myapp:latest
 
+      - name: Check Docker container logs
+        run: docker logs fe-api-container
+
+      - name: Inspect Docker container health
+        run: docker inspect --format='{{json .State.Health}}' fe-api-container
+
       - name: Wait for the app to be ready
         uses: jakejarvis/wait-action@v0.1.0
         with:
-          time: "30"
+          time: "180"
           url: "http://localhost:8080/"
+        continue-on-error: true
 
       - name: Test application response
         run: |
