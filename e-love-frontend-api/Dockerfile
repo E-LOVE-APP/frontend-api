@@ -1,4 +1,5 @@
-FROM python:3.10-slim
+# Этап сборки (builder)
+FROM python:3.10-slim AS builder
 
 WORKDIR /app
 
@@ -9,20 +10,38 @@ RUN apt-get update && apt-get install -y \
     gcc \
     libssl-dev \
     libffi-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* 
+     
+# Установка Poetry
+RUN pip install --no-cache-dir poetry
+# Оптимизация с помощью --no-cache-dir, чтобы избежать сохранения кеша
+# Также обьединение в одну команду RUN
 
-RUN pip install poetry
-
+# Копирование файлов для установки зависимостей
 COPY pyproject.toml poetry.lock ./
 
 # Установка зависимостей с помощью Poetry
 # config virtualenvs.create true - создает вирт. окр. среду для выполнения poetry в консоли docker тоже в env, как мы это используем прямо сейчас
 # по другому оно работать не будет - будет выдавать ошибку что библиотек не существует, потому-что вирт. окружение не было создано. (по сути это аналог команды poetry shell для докера)
-RUN poetry config virtualenvs.path --unset && poetry config virtualenvs.in-project true && poetry config --list && poetry install --no-root --no-interaction --no-ansi
+RUN poetry config virtualenvs.create false && poetry install --no-root --no-interaction --no-ansi
+
+# Финальный образ  (Первый этап сборки (builder) устанавливает все зависимости и сохраняет их в виртуальном окружении. На финальном этапе только необходимые файлы копируются в финальный образ, без установленных компиляторов и библиотек.)
+
+FROM python:3.10-slim
+
+WORKDIR /app
+# Копирование зависимостей из builder
+COPY --from=builder /usr/local /usr/local
+COPY --from=builder /app /app
+COPY . /app
 
 # --chown=1000:1000 - специальный паараметр команды который добавляет расширения для докер-файлов чтобы их нормально распознала винда
 # однако, ее можно будет даже и не использовать (я гляну позже)
 COPY --chown=1000:1000 . /app
+
+
+# Копирование приложения
+COPY . .
 
 EXPOSE 8000
 
