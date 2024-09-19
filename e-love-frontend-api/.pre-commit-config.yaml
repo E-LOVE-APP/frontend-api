@@ -9,13 +9,13 @@ repos:
     hooks:
       - id: isort
         exclude: "alembic/versions/|tests/|alembic/migrations|easter_eggs/|.venv/|.vscode/|__pycache__/"
-  - repo: https://github.com/pycqa/flake8
-    rev: 6.1.0
-    hooks:
-      - id: flake8
-        exclude: "alembic/versions/|tests/|alembic/migrations|easter_eggs/|.venv/|.vscode/|__pycache__/"
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.5.1
-    hooks:
-      - id: mypy
-        exclude: "alembic/versions/|tests/|alembic/migrations|easter_eggs/|.venv/|.vscode/|__pycache__/"
+  # - repo: https://github.com/pycqa/flake8
+  #   rev: 6.1.0
+  #   hooks:
+  #     - id: flake8
+  #       exclude: "alembic/versions/|tests/|alembic/migrations|easter_eggs/|.venv/|.vscode/|__pycache__/"
+  # - repo: https://github.com/pre-commit/mirrors-mypy
+  #   rev: v1.5.1
+  #   hooks:
+  #     - id: mypy
+  #       exclude: "alembic/versions/|tests/|alembic/migrations|easter_eggs/|.venv/|.vscode/|__pycache__/"

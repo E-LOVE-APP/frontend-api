@@ -1,11 +1,13 @@
 """This is the main file for our application"""
 
 import logging
+
 from fastapi import FastAPI
-from configuration.config import settings
-from configuration.database import engine, Base, get_db_session
 from sqlalchemy import text
-from easter_eggs.greeting import ascii_kitty, ascii_painter, ascii_hello_devs
+
+from configuration.config import settings
+from configuration.database import Base, engine, get_db_session
+from easter_eggs.greeting import ascii_hello_devs, ascii_kitty, ascii_painter
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)

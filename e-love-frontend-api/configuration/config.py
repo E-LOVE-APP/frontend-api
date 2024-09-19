@@ -1,8 +1,9 @@
 # config.py
-from typing import Optional
-from pydantic_settings import BaseSettings
-from dotenv import load_dotenv
 import os
+from typing import Optional
+
+from dotenv import load_dotenv
+from pydantic_settings import BaseSettings
 
 # Loading .env file
 load_dotenv(os.getenv("APP_ENV_PATH"))
@@ -15,7 +16,6 @@ class Settings(BaseSettings):
     app_running_env: str
     greeting_message: str
     database_url: str
-  
 
     class Config:
         env_file = os.getenv("APP_ENV_PATH")

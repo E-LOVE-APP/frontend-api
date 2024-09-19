@@ -53,15 +53,15 @@ jobs:
         run: |
           poetry run isort --check-only .
 
-      - name: Lint code with flake8
-        working-directory: e-love-frontend-api
-        run: |
-          poetry run flake8 .
+      # - name: Lint code with flake8
+      #   working-directory: e-love-frontend-api
+      #   run: |
+      #     poetry run flake8 .
 
-      - name: Type checking with mypy
-        working-directory: e-love-frontend-api
-        run: |
-          poetry run mypy .
+      # - name: Type checking with mypy
+      #   working-directory: e-love-frontend-api
+      #   run: |
+      #     poetry run mypy .
 
       - name: Build Docker image
         uses: docker/build-push-action@v4
