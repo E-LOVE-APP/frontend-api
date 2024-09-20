@@ -12,12 +12,22 @@ class User(BaseModel):
     user_descr = Column(String(500), nullable=True)
     email = Column(String(255), unique=True, nullable=False)
     password_hash = Column(String(128), nullable=True)
+    
+    # additional relationships
+    
+    gender = relationship("UserGender", back_populates="user")
+    image = relationship("UserImages", back_populates="user")
+    role = relationship("UserRole", back_populates="user")
+    status = relationship("UserStatus", back_populates="user")
+    
+    # main relationships
 
     posts = relationship("UserPost", back_populates="user")
 
     logs = relationship("AuditLogs", back_populates="user")
 
     categories = relationship("Categories", back_populates="user")
+    
 
     # Hashing
     def set_password(self, password):
@@ -26,5 +36,5 @@ class User(BaseModel):
     def check_password(self, password):
         return bcrypt.verify(password, self.password_hash)
 
-    # TODO: добавить сюда доп. атрибуты (role_id, status_id, etc. когда подставные таблицы будут готовы со стороны Вовы)
+    # TODO: добавить сюда доп. атрибуты (role_id, status_id, etc. когда подставные таблицы будут готовы со стороны Вовы)   
     # TODO: добавить комментарии классов и методов
