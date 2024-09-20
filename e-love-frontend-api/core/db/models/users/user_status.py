@@ -8,5 +8,4 @@ class UserStatus(BaseModel):
      
      status_name = Column(String(50), nullable=False)
      
-     user_id = Column(ForeignKey("user.id"), nullable=False)
-     user = relationship("User", back_populates="status")
+     status = relationship("UserStatus", back_populates="user")

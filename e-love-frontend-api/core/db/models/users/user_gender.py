@@ -8,5 +8,4 @@ class UserGender(BaseModel):
      
      gender_name = Column(String(50), nullable=False)
 
-     user_id = Column(ForeignKey("user.id"), nullable=False)
-     user = relationship("User", back_populates="gender")
+     gender = relationship("User", back_populates="gender")
