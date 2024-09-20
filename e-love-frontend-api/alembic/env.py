@@ -10,6 +10,12 @@ from core.db.models.audit_logs.audit_logs import AuditLogs
 from core.db.models.categories.categories import Categories
 from core.db.models.posts.user_post import UserPost
 
+# additional tables for user
+
+from core.db.models.users.user_gender import UserGender
+from core.db.models.users.user_status import UserStatus
+from core.db.models.users.user_roles import UserRole
+from core.db.models.users.user_images import UserImages
 
 from alembic import context
 
