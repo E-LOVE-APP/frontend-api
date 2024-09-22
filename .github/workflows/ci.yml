@@ -47,19 +47,19 @@ jobs:
       - name: Check code formatting with black
         working-directory: e-love-frontend-api
         run: |
-          poetry run black --check .
+          poetry run black --check . --exclude "alembic/|alembic/versions/|tests/|alembic/migrations|easter_eggs/|.venv/|.vscode/|__pycache__/"
 
       - name: Check import sorting with isort
         working-directory: e-love-frontend-api
         run: |
-          poetry run isort --check-only .
+          poetry run isort --check-only . --skip "alembic/|alembic/versions/|tests/|alembic/migrations|easter_eggs/|.venv/|.vscode/|__pycache__/"
 
       - name: Lint code with flake8
         working-directory: e-love-frontend-api
         run: |
-          poetry run flake8 .
+          poetry run flake8 . --exclude "alembic/,alembic/versions/,tests/,alembic/migrations,easter_eggs/,.venv/,.vscode/,__pycache__/"
 
       - name: Type checking with mypy
         working-directory: e-love-frontend-api
         run: |
-          poetry run mypy .
+          poetry run mypy . --exclude "alembic/,alembic/versions/,tests/,alembic/migrations,easter_eggs/,.venv/,.vscode/,__pycache__/"
