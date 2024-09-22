@@ -1,0 +1,37 @@
+from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy.orm import relationship
+from passlib.hash import bcrypt
+from ..base import BaseModel
+
+
+class User(BaseModel):
+    __tablename__ = "user"
+
+    first_name = Column(String(50), nullable=False)
+    last_name = Column(String(50), nullable=False)
+    user_descr = Column(String(500), nullable=True)
+    email = Column(String(255), unique=True, nullable=False)
+    password_hash = Column(String(128), nullable=True)
+
+    gender_id = Column(ForeignKey("user_gender.id"), nullable=False)
+    gender = relationship("user_gender", back_populates="user")
+
+    status_id = Column(ForeignKey("user_status.id"), nullable=False)
+    status = relationship("user_status", back_populates="user")
+
+    role_id = Column(ForeignKey("user_role.id"), nullable=False)
+    role = relationship("user_role", back_populates="user")
+
+    image = relationship("UserImages", back_populates="user")
+
+    posts = relationship("UserPost", back_populates="user")
+
+    logs = relationship("AuditLogs", back_populates="user")
+
+    categories = relationship("Categories", back_populates="user")
+
+    def set_password(self, password):
+        self.password_hash = bcrypt.hash(password)
+
+    def check_password(self, password):
+        return bcrypt.verify(password, self.password_hash)

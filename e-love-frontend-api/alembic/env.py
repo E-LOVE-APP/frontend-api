@@ -1,6 +1,21 @@
 from logging.config import fileConfig
+import os
+from sqlalchemy import engine_from_config
+from sqlalchemy import pool
+from configuration.database import engine, Base, DATABASE_URL
 
-from sqlalchemy import engine_from_config, pool
+# database models
+from core.db.models.users.users import User
+from core.db.models.audit_logs.audit_logs import AuditLogs
+from core.db.models.categories.categories import Categories
+from core.db.models.posts.user_post import UserPost
+
+# additional tables for user
+
+from core.db.models.users.user_gender import UserGender
+from core.db.models.users.user_status import UserStatus
+from core.db.models.users.user_roles import UserRole
+from core.db.models.users.user_images import UserImages
 
 from alembic import context
 from configuration.database import ALEMBIC_DATABASE_URL, Base, engine
@@ -14,7 +29,7 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-config.set_main_option("sqlalchemy.url", ALEMBIC_DATABASE_URL)
+config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
