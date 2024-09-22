@@ -35,7 +35,7 @@ mypy = "^1.11.2"
 pre-commit = "^3.4.0"
 
 [tool.black]
-line-length = 88
+line-length = 100
 target-version = ['py310']
 include = '\.pyi?$'
 exclude = '''
@@ -90,7 +90,7 @@ exclude = [
 ]
 
 [tool.isort]
-line_length = 88
+line_length = 100
 skip = [
     ".git",
     "__pycache__",

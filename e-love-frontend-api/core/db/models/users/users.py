@@ -1,6 +1,7 @@
-from sqlalchemy import Column, String, ForeignKey
-from sqlalchemy.orm import relationship
 from passlib.hash import bcrypt
+from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy.orm import relationship
+
 from ..base import BaseModel
 
 

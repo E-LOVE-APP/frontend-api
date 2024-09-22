@@ -3,11 +3,10 @@
 import logging
 
 from fastapi import FastAPI
-from sqlalchemy import text
 
 from configuration.config import settings
-from configuration.database import Base, engine, get_db_session
-from easter_eggs.greeting import ascii_hello_devs, ascii_kitty, ascii_painter
+from configuration.database import Base, engine
+from easter_eggs.greeting import ascii_hello_devs, ascii_painter
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)

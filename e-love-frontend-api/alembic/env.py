@@ -1,24 +1,18 @@
-from logging.config import fileConfig
 import os
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-from configuration.database import engine, Base, DATABASE_URL
+from logging.config import fileConfig
 
-# database models
-from core.db.models.users.users import User
+from sqlalchemy import engine_from_config, pool
+
+from alembic import context
+from configuration.database import DATABASE_URL, Base, engine
 from core.db.models.audit_logs.audit_logs import AuditLogs
 from core.db.models.categories.categories import Categories
 from core.db.models.posts.user_post import UserPost
-
-# additional tables for user
-
 from core.db.models.users.user_gender import UserGender
-from core.db.models.users.user_status import UserStatus
-from core.db.models.users.user_roles import UserRole
 from core.db.models.users.user_images import UserImages
-
-from alembic import context
-from configuration.database import Base
+from core.db.models.users.user_roles import UserRole
+from core.db.models.users.user_status import UserStatus
+from core.db.models.users.users import User
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
