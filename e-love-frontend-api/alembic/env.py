@@ -18,7 +18,7 @@ from core.db.models.users.user_roles import UserRole
 from core.db.models.users.user_images import UserImages
 
 from alembic import context
-from configuration.database import ALEMBIC_DATABASE_URL, Base, engine
+from configuration.database import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
