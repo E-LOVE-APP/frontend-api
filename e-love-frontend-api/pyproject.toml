@@ -30,9 +30,29 @@ pytest-cov = "^5.0.0"
 pytest-mock = "^3.14.0"
 faker = "^28.4.1"
 isort = "^5.13.2"
-flake8 = "^7.1.1"
 mypy = "^1.11.2"
 pre-commit = "^3.4.0"
+pylint = "^3.0.0"
+
+[tool.pylint]
+ignore = [
+    "__pycache__",
+    "venv",
+    ".venv",
+    "migrations",
+    "node_modules",
+    "alembic",
+    "easter_eggs"
+]
+max-line-length = 100
+disable = [
+    "C0114",  # Missing module docstring
+    "C0115",  # Missing class docstring
+    "C0116",  # Missing function docstring
+    "R0903",  # Too few public methods in class
+    "W0511",  # TODOS
+]
+
 
 [tool.black]
 line-length = 100
@@ -66,29 +86,6 @@ exclude = '''
   | \.cache
   | easter_eggs
 )/'''
-
-[tool.flake8]
-exclude = [
-    ".git",
-    "__pycache__",
-    "build",
-    "dist",
-    ".venv",
-    ".env",
-    "alembic/versions",
-    "migrations",
-    ".mypy_cache",
-    ".pytest_cache",
-    ".idea",
-    ".vscode",
-    "node_modules",
-    "tmp",
-    "temp",
-    "data",
-    "datasets",
-    "alembic",
-    "easter_eggs"
-]
 
 [tool.isort]
 line_length = 100

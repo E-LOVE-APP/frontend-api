@@ -54,10 +54,10 @@ jobs:
         run: |
           poetry run isort --check-only .
 
-      - name: Lint code with flake8
+      - name: Lint code with PyLint
         working-directory: e-love-frontend-api
         run: |
-          poetry run flake8 .
+          poetry run pylint . --fail-under=9.0
 
       - name: Type checking with mypy
         working-directory: e-love-frontend-api

@@ -7,8 +7,6 @@ from sqlalchemy.orm import declared_attr
 
 from configuration.database import Base
 
-""" Basic datatable model  """
-
 
 class BaseModel(Base):
     __abstract__ = True
