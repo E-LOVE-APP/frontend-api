@@ -1,12 +1,14 @@
 """Database configuration."""
 
+import logging
+from contextlib import contextmanager
+
+import colorlog
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from contextlib import contextmanager
+
 from configuration.config import settings
-import logging
-import colorlog
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
