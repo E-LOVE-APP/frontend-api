@@ -33,6 +33,7 @@ isort = "^5.13.2"
 mypy = "^1.11.2"
 pre-commit = "^3.4.0"
 pylint = "^3.0.0"
+types-passlib = "^1.7.7.20240819"
 
 [tool.pylint]
 ignore = [
