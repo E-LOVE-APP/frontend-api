@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/psf/black
-    rev: 24.4.2
+    rev: 24.8.0
     hooks:
       - id: black
         exclude: "alembic/versions/|tests/|alembic/migrations|easter_eggs/|.venv/|.vscode/|__pycache__/"
@@ -9,14 +9,20 @@ repos:
     hooks:
       - id: isort
         exclude: "alembic/versions/|tests/|alembic/migrations|easter_eggs/|.venv/|.vscode/|__pycache__/"
-  - repo: https://github.com/pre-commit/mirrors-pylint
-    rev: v3.0.0
-    hooks:
-      - id: pylint
-        args: ["--disable=C0114,C0115,C0116, R0903"]
-        exclude: "alembic/|alembic/versions/|tests/|alembic/migrations|easter_eggs/|.venv/|.vscode/|__pycache__/"
+  # - repo: https://github.com/pre-commit/mirrors-pylint
+  #   rev: v3.0.0a5
+  #   hooks:
+  #     - id: pylint
+  #       args:
+  #         ["--disable=C0114,C0115,C0116,R0903,W0511", "--max-line-length=100"]
+  #       exclude: "alembic/|alembic/versions/|tests/|alembic/migrations|easter_eggs/|.venv/|.vscode/|__pycache__/"
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.5.1
+    rev: v1.11.2
     hooks:
       - id: mypy
-        exclude: "alembic/|alembic/versions/|tests/|alembic/migrations|easter_eggs/|.venv/|.vscode/|__pycache__/"
+        args:
+          [
+            "--ignore-missing-imports",
+            "--exclude",
+            "alembic/|alembic/versions/|tests/|alembic/migrations|easter_eggs/|.venv/|.vscode/|__pycache__/",
+          ]

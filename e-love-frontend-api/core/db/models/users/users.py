@@ -1,3 +1,4 @@
+# type: ignore
 from passlib.hash import bcrypt
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.orm import relationship

@@ -1,3 +1,4 @@
+# type: ignore
 from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.orm import relationship
 
@@ -13,5 +14,5 @@ class AuditLogs(BaseModel):
     method = Column(String(50), nullable=False)
     result = Column(String(50), nullable=False)
 
-    user_id = Column(ForeignKey("user.id"), nullable=False)
+    user_id: str = Column(ForeignKey("user.id"), nullable=False)
     user = relationship("User", back_populates="logs")

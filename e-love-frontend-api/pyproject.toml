@@ -111,30 +111,6 @@ skip = [
     "easter_eggs"
 ]
 
-[tool.mypy]
-exclude = '''
-(\.git|
-__pycache__|
-build|
-dist|
-\.venv|
-\.env|
-alembic/versions|
-migrations|
-\.mypy_cache|
-\.pytest_cache|
-\.idea|
-\.vscode|
-node_modules|
-tmp|
-temp|
-data|
-easter_eggs|
-alembic|
-datasets)
-'''
-
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

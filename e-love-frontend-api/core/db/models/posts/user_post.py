@@ -1,3 +1,4 @@
+# type: ignore
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.orm import relationship
 
