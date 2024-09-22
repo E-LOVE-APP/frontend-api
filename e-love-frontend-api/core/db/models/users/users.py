@@ -15,13 +15,13 @@ class User(BaseModel):
 
     gender_id = Column(ForeignKey("user_gender.id"), nullable=False)
     gender = relationship("user_gender", back_populates="user")
-    
+
     status_id = Column(ForeignKey("user_status.id"), nullable=False)
     status = relationship("user_status", back_populates="user")
-    
+
     role_id = Column(ForeignKey("user_role.id"), nullable=False)
     role = relationship("user_role", back_populates="user")
-  
+
     image = relationship("UserImages", back_populates="user")
 
     posts = relationship("UserPost", back_populates="user")
@@ -29,14 +29,9 @@ class User(BaseModel):
     logs = relationship("AuditLogs", back_populates="user")
 
     categories = relationship("Categories", back_populates="user")
-    
 
-    # Hashing
     def set_password(self, password):
         self.password_hash = bcrypt.hash(password)
 
     def check_password(self, password):
         return bcrypt.verify(password, self.password_hash)
-
-    # TODO: добавить сюда доп. атрибуты (role_id, status_id, etc. когда подставные таблицы будут готовы со стороны Вовы)   
-    # TODO: добавить комментарии классов и методов
