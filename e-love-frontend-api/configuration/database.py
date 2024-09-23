@@ -31,6 +31,8 @@ console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
 DATABASE_URL = settings.database_url
+# UC-9:  В ошибке вижу отсутсвие в этом файле ALEMBIC_DATABASE_URL(его тут и нет), поэтому сделаю такое решение
+ALEMBIC_DATABASE_URL = DATABASE_URL 
 
 if not DATABASE_URL:
     logger.error("DATABASE_URL is not set in environment variables.")
