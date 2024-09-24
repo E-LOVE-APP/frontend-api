@@ -40,12 +40,9 @@ tasks:
   
   create-revision:
     desc: "Create new Alembic migration"
-    vars:
-      message:
-        sh: |
-          [ -n "$MESSAGE" ] && echo "$MESSAGE" || echo "auto_revision"
     cmds:
-      - docker exec fe-api poetry run alembic revision --autogenerate -m "{{.message}}"
+      - MESSAGE="{{.ARGS}}" docker exec fe-api poetry run alembic revision --autogenerate -m "$MESSAGE"
+
 
   downgrade-revision:
     desc: "Downgrade the database to the previous revision"
