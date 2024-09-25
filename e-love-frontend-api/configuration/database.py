@@ -36,7 +36,6 @@ if not DATABASE_URL:
     logger.error("DATABASE_URL is not set in environment variables.")
     raise ValueError("DATABASE_URL must be set in environment variables.")
 
-# Настройка SQLAlchemy
 try:
     engine = create_engine(DATABASE_URL)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -48,7 +47,6 @@ except Exception as e:
 Base = declarative_base()
 
 
-# Проверка подключения при загрузке конфигурации
 def check_db_connection():
     """Проверяет подключение к базе данных при загрузке конфигурации"""
     try:
