@@ -38,10 +38,11 @@ tasks:
     cmds:
       - docker exec fe-api poetry run alembic upgrade head
   
-  create-revision:
-    desc: "Create new Alembic migration"
+  create-revision-*:
+    vars:
+      message: '{{text .MATCH 0}}'  
     cmds:
-      - MESSAGE="{{.ARGS}}" docker exec fe-api poetry run alembic revision --autogenerate -m "$MESSAGE"
+      - docker exec fe-api poetry run alembic revision --autogenerate -m "{{.message}}"
 
 
   downgrade-revision:
