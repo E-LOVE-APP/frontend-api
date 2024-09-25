@@ -7,10 +7,13 @@ from alembic import context
 from configuration.database import DATABASE_URL, Base, engine
 from core.db.models.audit_logs.audit_logs import AuditLogs
 from core.db.models.categories.categories import Categories
+from core.db.models.intermediate_models.user_categories import user_categories
+from core.db.models.intermediate_models.user_genders import user_genders
+from core.db.models.intermediate_models.user_roles import user_roles
 from core.db.models.posts.user_post import UserPost
 from core.db.models.users.user_gender import UserGender
 from core.db.models.users.user_images import UserImages
-from core.db.models.users.user_roles import UserRole
+from core.db.models.users.user_role import UserRole
 from core.db.models.users.user_status import UserStatus
 from core.db.models.users.users import User
 
