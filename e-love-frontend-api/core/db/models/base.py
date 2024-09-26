@@ -23,7 +23,7 @@ class BaseModel(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     @declared_attr
-    def __tablename__(self, cls):
+    def __tablename__(cls):
         return cls.__name__.lower()
 
     def as_dict(self):

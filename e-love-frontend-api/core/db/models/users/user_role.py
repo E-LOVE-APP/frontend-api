@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 
-from core.db.models.intermediate_models.user_roles import user_roles
+from core.db.models.intermediate_models.user_roles import user_roles_table
 
 from ..base import BaseModel
 
@@ -19,4 +19,4 @@ class UserRole(BaseModel):
 
     role_name: Column[str] = Column(String(50), nullable=False)
 
-    users = relationship("User", secondary="user_roles", back_populates="roles")
+    users = relationship("User", secondary=user_roles_table, back_populates="roles")

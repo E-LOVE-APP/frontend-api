@@ -91,6 +91,7 @@ exclude = '''
 
 [tool.isort]
 line_length = 100
+profile = "black"
 skip = [
     ".git",
     "__pycache__",

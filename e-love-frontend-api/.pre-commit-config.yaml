@@ -1,14 +1,17 @@
 repos:
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ["--only-sections"]
+        exclude: "alembic/versions/|tests/|alembic/migrations|easter_eggs/|.venv/|.vscode/|__pycache__/"
+
   - repo: https://github.com/psf/black
     rev: 24.8.0
     hooks:
       - id: black
         exclude: "alembic/versions/|tests/|alembic/migrations|easter_eggs/|.venv/|.vscode/|__pycache__/"
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        exclude: "alembic/versions/|tests/|alembic/migrations|easter_eggs/|.venv/|.vscode/|__pycache__/"
+
   # Эти два плагина для pre-commit будут временно отключены, т.к. они не могут работать с exclude-папками, именно в пределах pre-commit.
   # - repo: https://github.com/pre-commit/mirrors-pylint
   #   rev: v3.0.0a5

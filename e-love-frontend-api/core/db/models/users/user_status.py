@@ -9,4 +9,4 @@ class UserStatus(BaseModel):
 
     status_name = Column(String(50), nullable=False)
 
-    status = relationship("UserStatus", back_populates="user")
+    users = relationship("User", back_populates="status")

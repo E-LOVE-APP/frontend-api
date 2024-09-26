@@ -3,7 +3,11 @@ from passlib.hash import bcrypt
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.orm import relationship
 
-from core.db.models.intermediate_models import user_categories, user_genders, user_roles
+from core.db.models.intermediate_models import (
+    user_categories_table,
+    user_genders_table,
+    user_roles_table,
+)
 
 from ..base import BaseModel
 
@@ -35,7 +39,7 @@ class User(BaseModel):
     password_hash: Column[str] = Column(String(128), nullable=True)
 
     status_id = Column(ForeignKey("user_status.id"), nullable=False)
-    status = relationship("user_status", back_populates="user")
+    status = relationship("UserStatus", back_populates="users")
 
     image = relationship("UserImages", back_populates="user")
 
@@ -44,9 +48,9 @@ class User(BaseModel):
     logs = relationship("AuditLogs", back_populates="user")
 
     # Many To Many relationships
-    genders = relationship("UserGender", secondary=user_genders, back_populates="users")
-    roles = relationship("UserRole", secondary=user_roles, back_populates="users")
-    categories = relationship("Categories", secondary=user_categories, back_populates="users")
+    genders = relationship("UserGender", secondary=user_genders_table, back_populates="users")
+    roles = relationship("UserRole", secondary=user_roles_table, back_populates="users")
+    categories = relationship("Categories", secondary=user_categories_table, back_populates="users")
 
     def set_password(self, password: str) -> None:
         """
