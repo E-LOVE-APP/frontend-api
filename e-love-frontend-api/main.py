@@ -4,10 +4,10 @@ import logging
 
 from fastapi import FastAPI
 
+from api.v1.router.router import api_router as main_router
 from configuration.config import settings
 from configuration.database import Base, engine
 from easter_eggs.greeting import ascii_hello_devs, ascii_painter
-from api.v1.router.router import api_router as main_router
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)

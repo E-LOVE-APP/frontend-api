@@ -52,6 +52,7 @@ disable = [
     "C0115",  # Missing class docstring
     "C0116",  # Missing function docstring
     "R0903",  # Too few public methods in class
+    "C0301",  # Line too long (it's more comments stuff and it's not really related to the code)
     "W0511",  # TODOS
 ]
 

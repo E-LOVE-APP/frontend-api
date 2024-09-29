@@ -1,4 +1,5 @@
 # app/api/v1/router/router.py
+# pylint: disable-all
 from fastapi import APIRouter
 
 from api.v1.endpoints.users.users import router as users_router

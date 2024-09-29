@@ -5,9 +5,8 @@ from typing import List, Optional
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session, selectinload
 
-from configuration.database import get_db_session
 from core.db.models.users.users import User
-from core.schemas.users.user_schema import UserCreate, UserUpdate, UserOutput
+from core.schemas.users.user_schema import UserCreate, UserOutput, UserUpdate
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -51,7 +50,7 @@ class UserService:
             return new_user
 
         except Exception as e:
-            await self.db_session.rollback()
+            self.db_session.rollback()
             logger.error(f"Unexpected error while creating user: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -61,13 +60,13 @@ class UserService:
     # TODO: Сюда в параметр нужно добавить проверку не просто по int, а по UUID
     def get_user_by_id(self, user_id: int) -> UserOutput:
         try:
-            user = db.query(User).filter(User.id == user_id).first()
+            user = self.db_session.query(User).filter(User.id == user_id).first()
             if not user:
                 raise HTTPException(status_code=404, detail="User not found")
             return UserOutput.from_orm(user)
 
         except Exception as e:
-            await self.db_session.rollback()
+            self.db_session.rollback()
             logger.error(f"Unexpected error while creating user: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -79,7 +78,7 @@ class UserService:
         self, page: int = 1, size: int = 0, limit: int = 10, email: Optional[str] = None
     ) -> List[User]:
         try:
-            query = self.db_session.query(user)
+            query = self.db_session.query(User)
             if email:
                 query = query.filter(User.email == email)
             users = (
@@ -90,7 +89,7 @@ class UserService:
             )
             return users
         except Exception as e:
-            await self.db_session.rollback()
+            self.db_session.rollback()
             logger.error(f"Unexpected error while creating user: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -108,7 +107,7 @@ class UserService:
             self.db_session.refresh(user)
             return user
         except Exception as e:
-            await self.db_session.rollback()
+            self.db_session.rollback()
             logger.error(f"Unexpected error while creating user: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -121,7 +120,7 @@ class UserService:
             self.db_session.delete(user)
             self.db_session.commit()
         except Exception as e:
-            await self.db_session.rollback()
+            self.db_session.rollback()
             logger.error(f"Unexpected error while creating user: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
