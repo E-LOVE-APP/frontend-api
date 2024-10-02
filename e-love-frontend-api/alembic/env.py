@@ -1,4 +1,5 @@
 import os
+import re
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool
@@ -27,7 +28,10 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-config.set_main_option("sqlalchemy.url", DATABASE_URL)
+# Создаем синхронный URL для базы данных (Alembic по стандарту работает с БД в синхронном режиме, к сожалению)
+SYNC_DATABASE_URL = re.sub(r"\+asyncmy", "+pymysql", DATABASE_URL)
+
+config.set_main_option("sqlalchemy.url", SYNC_DATABASE_URL)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
