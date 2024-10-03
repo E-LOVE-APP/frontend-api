@@ -1,13 +1,14 @@
 import logging
-from uuid import UUID
 from typing import List
+from uuid import UUID
 
 from fastapi import HTTPException, status
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.services.users.users import UserService
+from core.db.models.users.users import User
 from core.services.user_role.user_role import UserRoleService
+from core.services.users.users import UserService
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -184,8 +185,6 @@ class UserRoleAssociationService:
         try:
             role = await self.role_service.get_role_by_id(role_id)
             return role.users
-        except HTTPException:
-            raise
         except SQLAlchemyError as e:
             logger.error(f"An error occurred while fetching users with role: {e}")
             raise HTTPException(

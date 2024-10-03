@@ -57,7 +57,7 @@ class UserRoleService(BaseService):
                 detail="An unexpected database error occurred",
             )
 
-    async def get_role_by_id(self, role_id: UUID) -> Role:
+    async def get_role_by_id(self, role_id: UUID) -> UserRole:
         """
         Получает роль пользователя по её ID.
         Использует унаследованный метод абстрактного класса BaseService.
