@@ -6,6 +6,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.db.models.users.user_role import UserRole
 from core.db.models.users.users import User
 from core.services.user_role.user_role import UserRoleService
 from core.services.users.users import UserService
@@ -17,14 +18,16 @@ logger.setLevel(logging.INFO)
 class UserRoleAssociationService:
     """Сервис управления ролями пользователей."""
 
-    def __init__(self, db_session: AsyncSession):
+    def __init__(
+        self, db_session: AsyncSession, user_service: UserService, role_service: UserRoleService
+    ):
         self.db_session = db_session
-        self.user_service = UserService(db_session)
-        self.role_service = UserRoleService(db_session)
+        self.user_service = user_service
+        self.role_service = role_service
 
     async def add_role_to_user(self, user_id: UUID, role_id: UUID) -> None:
         """
-        Добавляет роли пользователю.
+        Добавляет роль пользователю.
 
         :param user_id: Идентификатор пользователя.
         :param role_id: Идентификатор роли.
@@ -37,7 +40,7 @@ class UserRoleAssociationService:
             if role in user.roles:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="This user already has this role",
+                    detail="This user already has these role",
                 )
 
             user.roles.append(role)
@@ -73,7 +76,7 @@ class UserRoleAssociationService:
             else:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="This user already has this roles",
+                    detail="This user already has these roles",
                 )
         except SQLAlchemyError as e:
             await self.db_session.rollback()
@@ -115,7 +118,7 @@ class UserRoleAssociationService:
 
     async def remove_role_from_user(self, user_id: UUID, role_id: UUID) -> None:
         """
-        Удаляет роли пользователя.
+        Удаляет роль пользователя.
 
         :param user_id: Идентификатор пользователя.
         :param role_id: Идентификатор роли.
@@ -128,7 +131,7 @@ class UserRoleAssociationService:
             if role not in user.roles:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="This user doesn't have this role",
+                    detail="This user doesn't have these role",
                 )
             user.roles.remove(role)
             await self.db_session.commit()
@@ -190,4 +193,22 @@ class UserRoleAssociationService:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Database session error while fetching users with role.",
+            )
+
+    async def get_user_roles(self, user_id: UUID) -> List[UserRole]:
+        """
+        Получает список ролей пользователя.
+
+        :param user_id: Идентификатор пользователя.
+        :return: Список объектов UserRole.
+        :raises HTTPException: Если пользователь не найден или произошла ошибка базы данных.
+        """
+        try:
+            user = await self.user_service.get_user_by_id(user_id)
+            return user.roles
+        except SQLAlchemyError as e:
+            logger.error(f"An error occurred while fetching user roles: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Database session error while fetching user roles.",
             )

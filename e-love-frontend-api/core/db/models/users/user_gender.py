@@ -1,8 +1,10 @@
-# type: ignore
+from typing import List
+
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 
 from core.db.models.intermediate_models.user_genders import user_genders_table
+from core.db.models.users.users import User
 
 from ..base import BaseModel
 
@@ -20,4 +22,6 @@ class UserGender(BaseModel):
 
     gender_name: Column[str] = Column(String(50), nullable=False)
 
-    users = relationship("User", secondary=user_genders_table, back_populates="genders")
+    users: List["User"] = relationship(
+        "User", secondary=user_genders_table, back_populates="genders"
+    )

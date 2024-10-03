@@ -1,3 +1,5 @@
+from typing import List
+
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 
@@ -19,4 +21,4 @@ class UserRole(BaseModel):
 
     role_name: Column[str] = Column(String(50), nullable=False)
 
-    users = relationship("User", secondary=user_roles_table, back_populates="roles")
+    users: List["User"] = relationship("User", secondary=user_roles_table, back_populates="roles")
