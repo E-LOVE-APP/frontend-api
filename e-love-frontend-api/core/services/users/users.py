@@ -11,12 +11,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from core.db.models.users.users import User
+from core.services.base_service import BaseService
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-class UserService:
+class UserService(BaseService):
     """Сервисный класс для управления пользователями."""
 
     def __init__(self, db_session: AsyncSession):
@@ -78,25 +79,13 @@ class UserService:
     async def get_user_by_id(self, user_id: UUID) -> User:
         """
         Получает пользователя по его ID.
+        Использует унаследованный метод абстрактного класса BaseService.
 
         :param user_id: Идентификатор пользователя.
         :return: Объект пользователя.
         :raises HTTPException: Если пользователь не найден или произошла ошибка базы данных.
         """
-        try:
-            query = select(User).where(User.id == user_id)
-            result = await self.db_session.execute(query)
-            user = result.scalar_one_or_none()
-            if not user:
-                raise HTTPException(status_code=404, detail="User not found")
-            return user
-
-        except SQLAlchemyError as e:
-            logger.error(f"Unexpected error while fetching user: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected database error occurred",
-            )
+        return await self.get_object_by_id(User, user_id)
 
     async def get_users_list(
         self, page: int = 1, size: int = 0, limit: int = 10, email: Optional[str] = None

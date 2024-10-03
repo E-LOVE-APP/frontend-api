@@ -1,4 +1,6 @@
 # type: ignore
+from typing import List
+
 from passlib.hash import bcrypt
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.orm import relationship
@@ -8,6 +10,7 @@ from core.db.models.intermediate_models import (
     user_genders_table,
     user_roles_table,
 )
+from core.db.models.users.user_role import UserRole
 
 from ..base import BaseModel
 
@@ -39,6 +42,10 @@ class User(BaseModel):
     password_hash: Column[str] = Column(String(128), nullable=True)
 
     status_id = Column(ForeignKey("user_status.id"), nullable=False)
+
+    # INFO: SQLAlchemy при использовании relationship создает специальный объект InstrumentedList,
+    # который ведет себя как обычный список Python, но с дополнительной функциональностью
+    # для отслеживания изменений и взаимодействия с базой данных.
     status = relationship("UserStatus", back_populates="users")
 
     image = relationship("UserImages", back_populates="user")
@@ -49,7 +56,9 @@ class User(BaseModel):
 
     # Many To Many relationships
     genders = relationship("UserGender", secondary=user_genders_table, back_populates="users")
-    roles = relationship("UserRole", secondary=user_roles_table, back_populates="users")
+    roles: List[UserRole] = relationship(
+        "UserRole", secondary=user_roles_table, back_populates="users"
+    )
     categories = relationship("Categories", secondary=user_categories_table, back_populates="users")
 
     def set_password(self, password: str) -> None:
