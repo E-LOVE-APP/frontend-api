@@ -2,7 +2,7 @@ from typing import List
 from uuid import UUID
 
 from sqlalchemy import Column, ForeignKey, String
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
 
 from ..base import BaseModel
 
@@ -13,4 +13,4 @@ class UserImages(BaseModel):
     decoded_img: Column[str] = Column(String(124), nullable=False)
 
     user_id: Column[UUID] = Column(ForeignKey("user.id"), nullable=False)
-    user: List["User"] = relationship("User", back_populates="image")
+    user: Mapped[List["User"]] = relationship("User", back_populates="image", uselist=True)

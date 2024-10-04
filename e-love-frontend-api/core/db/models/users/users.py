@@ -3,7 +3,7 @@ from uuid import UUID
 
 from passlib.hash import bcrypt
 from sqlalchemy import Column, ForeignKey, String
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
 
 from core.db.models.intermediate_models.user_categories import user_categories_table
 from core.db.models.intermediate_models.user_genders import user_genders_table
@@ -40,25 +40,23 @@ class User(BaseModel):
 
     status_id: Column[UUID] = Column(ForeignKey("user_status.id"), nullable=False)
 
-    # INFO: SQLAlchemy при использовании relationship создает специальный объект InstrumentedList,
-    # который ведет себя как обычный список Python, но с дополнительной функциональностью
-    # для отслеживания изменений и взаимодействия с базой данных.
-    status: List["UserStatus"] = relationship("UserStatus", back_populates="users")
+    status: Mapped["UserStatus"] = relationship("UserStatus", back_populates="users")
 
-    image: List["UserImages"] = relationship("UserImages", back_populates="user")
+    # TODO: change the name to 'images'; Probably should also do it like M to M relationship
+    image: Mapped["UserImages"] = relationship("UserImages", back_populates="user")
 
-    posts: List["UserPost"] = relationship("UserPost", back_populates="user")
+    posts: Mapped["UserPost"] = relationship("UserPost", back_populates="user")
 
-    logs: List["AuditLogs"] = relationship("AuditLogs", back_populates="user")
+    logs: Mapped["AuditLogs"] = relationship("AuditLogs", back_populates="user")
 
     # Many To Many relationships
-    genders: List["UserGender"] = relationship(
+    genders: Mapped[List["UserGender"]] = relationship(
         "UserGender", secondary=user_genders_table, back_populates="users"
     )
-    roles: List["UserRole"] = relationship(
+    roles: Mapped[List["UserRole"]] = relationship(
         "UserRole", secondary=user_roles_table, back_populates="users"
     )
-    categories: List["Categories"] = relationship(
+    categories: Mapped[List["Categories"]] = relationship(
         "Categories", secondary=user_categories_table, back_populates="users"
     )
 

@@ -1,7 +1,7 @@
 from typing import List
 
 from sqlalchemy import Column, String
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
 
 from core.db.models.intermediate_models.user_roles import user_roles_table
 
@@ -21,4 +21,6 @@ class UserRole(BaseModel):
 
     role_name: Column[str] = Column(String(50), nullable=False)
 
-    users: List["User"] = relationship("User", secondary=user_roles_table, back_populates="roles")
+    users: Mapped[List["User"]] = relationship(
+        "User", secondary=user_roles_table, back_populates="roles"
+    )
