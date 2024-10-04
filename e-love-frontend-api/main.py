@@ -47,11 +47,6 @@ logger = logging.getLogger(__name__)
 
 @app.on_event("startup")
 async def startup_event():
-    logger.info("All applications routes:")
-    for route in app.routes:
-        methods = ", ".join(sorted(route.methods))
-        logger.info(f"{methods:7} -> {route.path}")
-
     # Добавляем вызов функции создания таблиц
     await create_tables()
 

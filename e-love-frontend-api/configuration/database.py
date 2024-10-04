@@ -48,15 +48,15 @@ except Exception as e:
 Base = declarative_base()
 
 
-async def check_db_connection():
-    """Проверяет подключение к базе данных при загрузке конфигурации"""
-    try:
-        async with engine.connect() as connection:
-            await connection.execute(text("SELECT 1"))
-        logger.info("Connected to the database successfully.")
-    except Exception as e:
-        logger.error(f"Failed to connect to the database: {e}")
-        raise
+# async def check_db_connection():
+#     """Проверяет подключение к базе данных при загрузке конфигурации"""
+#     try:
+#         async with engine.connect() as connection:
+#             await connection.execute(text("SELECT 1"))
+#         logger.info("Connected to the database successfully.")
+#     except Exception as e:
+#         logger.error(f"Failed to connect to the database: {e}")
+#         raise
 
 
 logger.info("Starting database connection check...")
