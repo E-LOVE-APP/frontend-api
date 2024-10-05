@@ -66,7 +66,15 @@ class UserRoleService(BaseService):
         :return: Объект роли пользователя.
         :raises HTTPException: Если роль не найдена или произошла ошибка базы данных.
         """
-        return await self.get_object_by_id(UserRole, role_id)
+        try:
+            return await self.get_object_by_id(UserRole, role_id)
+        except SQLAlchemyError as e:
+            await self.db_session.rollback()
+            logger.error(f"An error occurred while getting the role: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Database session error while getting the role.",
+            )
 
     async def get_user_roles_list(self) -> List[UserRole]:
         """
@@ -128,18 +136,11 @@ class UserRoleService(BaseService):
         :raises HTTPException: Если роль не найдена или произошла ошибка базы данных.
         """
         try:
-            query = select(UserRole).where(UserRole.id == role_id)
-            result = await self.db_session.execute(query)
-            role = result.scalar_one_or_none()
+            return await self.delete_object_by_id(UserRole, role_id)
 
-            if not role:
-                raise HTTPException(status_code=404, detail="Role not found")
-
-            await self.db_session.delete(role)
-            await self.db_session.commit()
-        except Exception as e:
+        except SQLAlchemyError as e:
             await self.db_session.rollback()
-            logger.error(f"Unexpected error while deleting this user role: {e}")
+            logger.error(f"Unexpected error while deleting the role: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="An unexpected database error occurred",

@@ -6,11 +6,12 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from core.db.models.users.users import User
+from core.schemas.users.user_schema import UserUpdateSchema
 from core.services.base_service import BaseService
 
 logger = logging.getLogger(__name__)
@@ -29,8 +30,6 @@ class UserService(BaseService):
 
         self.db_session = db_session
 
-    # Пока что, временно используем dict, как входными данными. Я отдельно позже создам таску, где мы переделаем эти словари под DTO-objects.
-    # Использование DTO будет намного лучше с точки зрения архитектуры.
     async def create_user(self, user_data: dict) -> User:
         """
         Создает нового пользователя.
@@ -85,7 +84,15 @@ class UserService(BaseService):
         :return: Объект пользователя.
         :raises HTTPException: Если пользователь не найден или произошла ошибка базы данных.
         """
-        return await self.get_object_by_id(User, user_id)
+        try:
+            return await self.get_object_by_id(User, user_id)
+        except SQLAlchemyError as e:
+            await self.db_session.rollback()
+            logger.error(f"An error occurred while getting the user: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Database session error while getting the user.",
+            )
 
     async def get_users_list(
         self, page: int = 1, size: int = 0, limit: int = 10, email: Optional[str] = None
@@ -119,7 +126,7 @@ class UserService(BaseService):
             )
 
     # TODO: cast to generic methods
-    async def update_user(self, user_id: UUID, update_data: dict) -> User:
+    async def update_user(self, user_id: UUID, update_data: UserUpdateSchema) -> User:
         """
         Обновляет информацию о пользователе.
 
@@ -142,6 +149,13 @@ class UserService(BaseService):
             await self.db_session.refresh(user)
             return user
 
+        except IntegrityError as e:
+            await self.db_session.rollback()
+            logger.error(f"IntegrityError while updating the user: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot update the user due to integrity constraints.",
+            )
         except SQLAlchemyError as e:
             await self.db_session.rollback()
             logger.error(f"Unexpected error while updating user: {e}")
@@ -150,8 +164,7 @@ class UserService(BaseService):
                 detail="An unexpected database error occurred",
             )
 
-    # TODO: cast to generic methods
-    async def delete_user(self, user_id: UUID) -> None:
+    async def delete_user(self, user_id: UUID) -> User:
         """
         Удаляет пользователя из базы данных.
 
@@ -159,10 +172,16 @@ class UserService(BaseService):
         :raises HTTPException: Если пользователь не найден или произошла ошибка базы данных.
         """
         try:
-            user = await self.get_user_by_id(user_id)
+            return await self.delete_object_by_id(User, user_id)
 
-            await self.db_session.delete(user)
-            await self.db_session.commit()
+        # Если в других таблицах уже имеются записи про юзеров, мы не сможем удалить этого юзера, пока оттуда не будут удалены так же все его записи. Это Integrity error. Однако, я считаю достаточно целесообразно сделать возможным каскадно удалить все записи, связанные с юзером, при удалении самого юзера - потому-что если он сам хочет удалить аккаунт, или его банят, зачем после этого в БД тогда хранить его информацию? Возможно это не лучшая идея, это мы обсудить 12.10 на roadmap.
+        except IntegrityError as e:
+            await self.db_session.rollback()
+            logger.error(f"IntegrityError while deleting the user: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot delete the user because it is referenced by other records.",
+            )
 
         except SQLAlchemyError as e:
             await self.db_session.rollback()

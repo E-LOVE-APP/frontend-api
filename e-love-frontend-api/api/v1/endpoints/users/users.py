@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from configuration.database import get_db_session
 from core.schemas.errors.httperror import HTTPError
-from core.schemas.users.user_schema import UserCreate, UserOutput, UserUpdate
+from core.schemas.users.user_schema import UserCreate, UserOutput, UserUpdateSchema
 from core.services.users.users import UserService
 
 router = APIRouter(
@@ -17,6 +17,7 @@ router = APIRouter(
 
 
 # Пример корректного метода, с описанием для swagger; Тэги и responses можно будет отдельно создать в отдельных файлах, чтобы тут легко переиспользовать, чем я потом и займусь.
+# POST-эндпоинт для юзера не подлежит реализации, пока не будет настроен Auth0.
 @router.post(
     "/",
     response_model=UserOutput,
@@ -129,7 +130,7 @@ async def get_users_list(
 )
 async def update_user(
     user_id: UUID,
-    user_update: UserUpdate,
+    user_update: UserUpdateSchema,
     db: AsyncSession = Depends(get_db_session),
 ):
     """
