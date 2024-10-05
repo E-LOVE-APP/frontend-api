@@ -2,6 +2,7 @@
 # types: ignore
 # type: ignore
 
+import uuid
 from uuid import UUID
 
 from fastapi import HTTPException
@@ -13,9 +14,9 @@ class BaseService:
     def __init__(self, db_session: AsyncSession):
         self.db_session = db_session
 
-    # TODO: add typization
     async def get_object_by_id(self, model, object_id: UUID):
-        result = await self.db_session.execute(select(model).where(model.id == object_id))
+        object_id_str = str(object_id)  # Преобразуем UUID в строку с дефисами
+        result = await self.db_session.execute(select(model).where(model.id == object_id_str))
         obj = result.scalar_one_or_none()
         if not obj:
             raise HTTPException(status_code=404, detail=f"{model.__name__} not found")

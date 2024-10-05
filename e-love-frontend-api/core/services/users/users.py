@@ -118,6 +118,7 @@ class UserService(BaseService):
                 detail="An unexpected database error occurred",
             )
 
+    # TODO: cast to generic methods
     async def update_user(self, user_id: UUID, update_data: dict) -> User:
         """
         Обновляет информацию о пользователе.
@@ -149,6 +150,7 @@ class UserService(BaseService):
                 detail="An unexpected database error occurred",
             )
 
+    # TODO: cast to generic methods
     async def delete_user(self, user_id: UUID) -> None:
         """
         Удаляет пользователя из базы данных.

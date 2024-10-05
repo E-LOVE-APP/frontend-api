@@ -2,7 +2,7 @@ from typing import List
 from uuid import UUID
 
 from sqlalchemy import Column, ForeignKey, String
-from sqlalchemy.orm import relationship, Mapped
+from sqlalchemy.orm import Mapped, relationship
 
 from ..base import BaseModel
 

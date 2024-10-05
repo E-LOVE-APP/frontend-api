@@ -1,7 +1,7 @@
 from typing import List
 
 from sqlalchemy import Column, String
-from sqlalchemy.orm import relationship, Mapped
+from sqlalchemy.orm import Mapped, relationship
 
 from ..base import BaseModel
 

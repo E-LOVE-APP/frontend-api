@@ -1,4 +1,5 @@
 from typing import Optional
+from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -18,7 +19,7 @@ class UserUpdate(BaseModel):
 
 
 class UserOutput(BaseModel):
-    id: int
+    id: UUID
     first_name: str
     last_name: str
     email: str

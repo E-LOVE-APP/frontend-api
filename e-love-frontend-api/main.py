@@ -21,7 +21,7 @@ app = FastAPI(
 )
 
 # API-router injection
-app.include_router(main_router, prefix="/api/v1")
+app.include_router(main_router)
 
 
 # Test routes. We will remove those later

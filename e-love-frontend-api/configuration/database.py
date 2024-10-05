@@ -62,8 +62,7 @@ Base = declarative_base()
 logger.info("Starting database connection check...")
 
 
-@asynccontextmanager
-async def get_db_session():
+async def get_db_session() -> AsyncSession:
     async with AsyncSessionLocal() as session:
         try:
             yield session

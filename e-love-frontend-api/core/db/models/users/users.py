@@ -3,11 +3,19 @@ from uuid import UUID
 
 from passlib.hash import bcrypt
 from sqlalchemy import Column, ForeignKey, String
-from sqlalchemy.orm import relationship, Mapped
+from sqlalchemy.orm import Mapped, relationship
 
+from core.db.models.audit_logs.audit_logs import AuditLogs
+from core.db.models.categories.categories import Categories
+from core.db.models.intermediate_models.posts_categories import posts_categories_table
 from core.db.models.intermediate_models.user_categories import user_categories_table
 from core.db.models.intermediate_models.user_genders import user_genders_table
 from core.db.models.intermediate_models.user_roles import user_roles_table
+from core.db.models.posts.user_post import UserPost
+from core.db.models.users.user_gender import UserGender
+from core.db.models.users.user_images import UserImages
+from core.db.models.users.user_role import UserRole
+from core.db.models.users.user_status import UserStatus
 
 from ..base import BaseModel
 
