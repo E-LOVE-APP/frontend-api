@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db.models.users.user_role import UserRole
@@ -106,12 +106,7 @@ class UserRoleService(BaseService):
         :raises HTTPException: Если роль не найдена или произошла ошибка базы данных.
         """
         try:
-            query = select(UserRole).where(UserRole.id == role_id)
-            result = await self.db_session.execute(query)
-            role = result.scalar_one_or_none()
-
-            if not role:
-                raise HTTPException(status_code=404, detail="Role not found")
+            role = await self.get_role_by_id(role_id)
 
             for key, value in update_role_data.items():
                 setattr(role, key, value)
@@ -137,7 +132,13 @@ class UserRoleService(BaseService):
         """
         try:
             return await self.delete_object_by_id(UserRole, role_id)
-
+        except IntegrityError as e:
+            await self.db_session.rollback()
+            logger.error(f"IntegrityError while deleting the user role: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot delete the user role because it is referenced by other records.",
+            )
         except SQLAlchemyError as e:
             await self.db_session.rollback()
             logger.error(f"Unexpected error while deleting the role: {e}")
