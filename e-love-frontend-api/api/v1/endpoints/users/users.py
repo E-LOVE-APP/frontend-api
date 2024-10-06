@@ -47,7 +47,7 @@ async def create_user(
     - **password**: Password for the user
     """
     user_service = UserService(db)
-    return await user_service.create_user(user.dict())
+    return await user_service.create_user(user)
 
 
 @router.get(
@@ -140,7 +140,7 @@ async def update_user(
     - **user_update**: Fields to update
     """
     user_service = UserService(db)
-    return await user_service.update_user(user_id, user_update.dict(exclude_unset=True))
+    return await user_service.update_user(user_id, user_update)
 
 
 @router.delete(

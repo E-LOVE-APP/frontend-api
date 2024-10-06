@@ -130,7 +130,7 @@ async def update_user_role(
     - **role_update**: Fields to update
     """
     user_role_service = UserRoleService(db)
-    return await user_role_service.update_user_role(role_id, role_update.dict(exclude_unset=True))
+    return await user_role_service.update_user_role(role_id, role_update)
 
 
 @router.delete(
