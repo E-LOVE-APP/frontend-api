@@ -4,8 +4,10 @@ from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from auth.security import Authenticator, authenticator
 from configuration.database import get_db_session
 from core.schemas.errors.httperror import HTTPError
 from core.schemas.users.user_schema import UserCreate, UserOutput, UserUpdateSchema
@@ -64,7 +66,10 @@ async def create_user(
         },
     },
     tags=["Users", "Get user"],
-    dependencies=[Depends(get_db_session)],
+    dependencies=[
+        Depends(get_db_session),
+        Depends(authenticator.authenticate),
+    ],
 )
 async def get_user_by_id(
     user_id: UUID,

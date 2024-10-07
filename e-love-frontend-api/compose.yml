@@ -30,6 +30,9 @@ services:
         source: ./api
         target: /app/api
       - type: bind
+        source: ./auth
+        target: /app/auth
+      - type: bind
         source: ./configuration
         target: /app/configuration
       - type: bind
