@@ -4,15 +4,13 @@ import logging
 
 from fastapi import FastAPI
 
+from api.v1.router.router import api_router as main_router
 from configuration.config import settings
 from configuration.database import Base, engine
 from easter_eggs.greeting import ascii_hello_devs, ascii_painter
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
-
-# Create the database tables
-Base.metadata.create_all(bind=engine)
 
 print(ascii_hello_devs)
 print(ascii_painter)
@@ -22,8 +20,11 @@ app = FastAPI(
     version=settings.app_version,
 )
 
+# API-router injection
+app.include_router(main_router)
 
-# Test routes. We will remove these later
+
+# Test routes. We will remove those later
 @app.get("/hello")
 async def hello():
     """This is a test route"""
@@ -39,3 +40,18 @@ async def config_info():
         "app_running_env": settings.app_running_env,
         "greeting_message": settings.greeting_message,
     }
+
+
+logger = logging.getLogger(__name__)
+
+
+@app.on_event("startup")
+async def startup_event():
+    # Добавляем вызов функции создания таблиц
+    await create_tables()
+
+
+async def create_tables():
+    """Создает таблицы в базе данных при запуске приложения."""
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)

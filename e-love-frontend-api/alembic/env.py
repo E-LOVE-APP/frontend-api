@@ -1,4 +1,5 @@
 import os
+import re
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool
@@ -7,9 +8,10 @@ from alembic import context
 from configuration.database import DATABASE_URL, Base, engine
 from core.db.models.audit_logs.audit_logs import AuditLogs
 from core.db.models.categories.categories import Categories
-from core.db.models.intermediate_models.user_categories import user_categories
-from core.db.models.intermediate_models.user_genders import user_genders
-from core.db.models.intermediate_models.user_roles import user_roles
+from core.db.models.intermediate_models.posts_categories import posts_categories_table
+from core.db.models.intermediate_models.user_categories import user_categories_table
+from core.db.models.intermediate_models.user_genders import user_genders_table
+from core.db.models.intermediate_models.user_roles import user_roles_table
 from core.db.models.posts.user_post import UserPost
 from core.db.models.users.user_gender import UserGender
 from core.db.models.users.user_images import UserImages
@@ -26,7 +28,10 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-config.set_main_option("sqlalchemy.url", DATABASE_URL)
+# Создаем синхронный URL для базы данных (Alembic по стандарту работает с БД в синхронном режиме, к сожалению)
+SYNC_DATABASE_URL = re.sub(r"\+asyncmy", "+pymysql", DATABASE_URL)
+
+config.set_main_option("sqlalchemy.url", SYNC_DATABASE_URL)
 
 # add your model's MetaData object here
 # for 'autogenerate' support

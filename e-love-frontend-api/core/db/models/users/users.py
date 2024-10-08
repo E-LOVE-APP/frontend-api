@@ -1,9 +1,21 @@
-# type: ignore
+from typing import List
+from uuid import UUID
+
 from passlib.hash import bcrypt
 from sqlalchemy import Column, ForeignKey, String
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, relationship
 
-from core.db.models.intermediate_models import user_categories, user_genders, user_roles
+from core.db.models.audit_logs.audit_logs import AuditLogs
+from core.db.models.categories.categories import Categories
+from core.db.models.intermediate_models.posts_categories import posts_categories_table
+from core.db.models.intermediate_models.user_categories import user_categories_table
+from core.db.models.intermediate_models.user_genders import user_genders_table
+from core.db.models.intermediate_models.user_roles import user_roles_table
+from core.db.models.posts.user_post import UserPost
+from core.db.models.users.user_gender import UserGender
+from core.db.models.users.user_images import UserImages
+from core.db.models.users.user_role import UserRole
+from core.db.models.users.user_status import UserStatus
 
 from ..base import BaseModel
 
@@ -34,19 +46,27 @@ class User(BaseModel):
     email: Column[str] = Column(String(255), unique=True, nullable=False)
     password_hash: Column[str] = Column(String(128), nullable=True)
 
-    status_id = Column(ForeignKey("user_status.id"), nullable=False)
-    status = relationship("user_status", back_populates="user")
+    status_id: Column[UUID] = Column(ForeignKey("user_status.id"), nullable=False)
 
-    image = relationship("UserImages", back_populates="user")
+    status: Mapped["UserStatus"] = relationship("UserStatus", back_populates="users")
 
-    posts = relationship("UserPost", back_populates="user")
+    # TODO: change the name to 'images'; Probably should also do it like M to M relationship
+    image: Mapped["UserImages"] = relationship("UserImages", back_populates="user")
 
-    logs = relationship("AuditLogs", back_populates="user")
+    posts: Mapped["UserPost"] = relationship("UserPost", back_populates="user")
+
+    logs: Mapped["AuditLogs"] = relationship("AuditLogs", back_populates="user")
 
     # Many To Many relationships
-    genders = relationship("UserGender", secondary=user_genders, back_populates="users")
-    roles = relationship("UserRole", secondary=user_roles, back_populates="users")
-    categories = relationship("Categories", secondary=user_categories, back_populates="users")
+    genders: Mapped[List["UserGender"]] = relationship(
+        "UserGender", secondary=user_genders_table, back_populates="users"
+    )
+    roles: Mapped[List["UserRole"]] = relationship(
+        "UserRole", secondary=user_roles_table, back_populates="users"
+    )
+    categories: Mapped[List["Categories"]] = relationship(
+        "Categories", secondary=user_categories_table, back_populates="users"
+    )
 
     def set_password(self, password: str) -> None:
         """

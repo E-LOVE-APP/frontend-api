@@ -3,7 +3,7 @@ from sqlalchemy import Column, ForeignKey, Table
 
 from ..base import Base
 
-user_categories = Table(
+user_categories_table = Table(
     "user_categories",
     Base.metadata,
     Column("user_id", ForeignKey("user.id"), primary_key=True),

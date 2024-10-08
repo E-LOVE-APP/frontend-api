@@ -11,6 +11,7 @@ from configuration.database import Base
 class BaseModel(Base):
     __abstract__ = True
 
+    # TODO: рассмотреть вопрос по касту этого Column до binary-id в целях экономии места в БД ?
     id = Column(
         String(36),
         primary_key=True,
@@ -23,7 +24,7 @@ class BaseModel(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     @declared_attr
-    def __tablename__(self, cls):
+    def __tablename__(cls):
         return cls.__name__.lower()
 
     def as_dict(self):

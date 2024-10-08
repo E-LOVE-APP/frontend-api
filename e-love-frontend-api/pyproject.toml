@@ -18,6 +18,11 @@ alembic = "^1.13.2"
 pymysql = "^1.1.1"
 cryptography = "^43.0.1"
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+aiomysql = "^0.2.0"
+asyncmy = "^0.2.9"
+jwt = "^1.3.1"
+pyjwt = {extras = ["crypto"], version = "^2.9.0"}
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 
 
 [tool.poetry.group.dev.dependencies]
@@ -52,7 +57,10 @@ disable = [
     "C0115",  # Missing class docstring
     "C0116",  # Missing function docstring
     "R0903",  # Too few public methods in class
+    "C0301",  # Line too long (it's more comments stuff and it's not really related to the code)
     "W0511",  # TODOS
+    "W0707",  # Тут руганина от PyLint идет на частое переиспользование 'обобщенных' исключений, в чем в целом, он абсолжтно прав. Однако, чтобы оно пропускало дальше код нормально, это нужно не учитывать, поскольку в скором времени я создам кастомные исключения, которые полностью будут покрывать эту проблематику.
+    "W1203", # Use lazy % formatting in logging functions (logging-fstring-interpolation)
 ]
 
 
@@ -91,6 +99,7 @@ exclude = '''
 
 [tool.isort]
 line_length = 100
+profile = "black"
 skip = [
     ".git",
     "__pycache__",

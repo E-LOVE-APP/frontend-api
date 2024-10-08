@@ -3,7 +3,7 @@ from sqlalchemy import Column, ForeignKey, Table
 
 from ..base import Base
 
-user_roles = Table(
+user_roles_table = Table(
     "user_roles",
     Base.metadata,
     Column("user_id", ForeignKey("user.id"), primary_key=True),
