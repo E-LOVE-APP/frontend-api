@@ -6,6 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from auth.security import Authenticator, authenticator
 from configuration.database import get_db_session
 from core.schemas.errors.httperror import HTTPError
 from core.schemas.user_role.user_role_schema import UserRoleOutput
@@ -56,14 +57,17 @@ def get_user_role_association_service(
             "model": HTTPError,
         },
     },
-    dependencies=[Depends(get_db_session)],
+    dependencies=[
+        Depends(get_db_session),
+        Depends(authenticator.authenticate),
+    ],
 )
 async def add_role_to_user(
     request: AddRoleToUserRequest,
     service: UserRoleAssociationService = Depends(get_user_role_association_service),
 ):
     """
-    Add a role to a user.
+    Add a role to the user.
 
     - **user_id**: UUID of the user
     - **role_id**: UUID of the role to add
@@ -95,7 +99,10 @@ async def add_role_to_user(
             "model": HTTPError,
         },
     },
-    dependencies=[Depends(get_db_session)],
+    dependencies=[
+        Depends(get_db_session),
+        Depends(authenticator.authenticate),
+    ],
 )
 async def add_roles_to_user(
     request: AddRolesToUserRequest,
@@ -134,7 +141,11 @@ async def add_roles_to_user(
             "model": HTTPError,
         },
     },
-    dependencies=[Depends(get_db_session)],
+    dependencies=[
+        Depends(get_db_session),
+        Depends(authenticator.authenticate),
+        Depends(authenticator.require_role("Admin")),
+    ],
 )
 async def update_user_roles(
     request: UpdateUserRolesRequest,
@@ -173,7 +184,11 @@ async def update_user_roles(
             "model": HTTPError,
         },
     },
-    dependencies=[Depends(get_db_session)],
+    dependencies=[
+        Depends(get_db_session),
+        Depends(authenticator.authenticate),
+        Depends(authenticator.require_role("Admin")),
+    ],
 )
 async def remove_role_from_user(
     request: RemoveRoleFromUserRequest,
@@ -214,7 +229,11 @@ async def remove_role_from_user(
             "model": HTTPError,
         },
     },
-    dependencies=[Depends(get_db_session)],
+    dependencies=[
+        Depends(get_db_session),
+        Depends(authenticator.authenticate),
+        Depends(authenticator.require_role("Admin")),
+    ],
 )
 async def remove_roles_from_user(
     request: RemoveRolesFromUserRequest,
@@ -248,7 +267,12 @@ async def remove_roles_from_user(
         },
     },
     tags=["User Role Association", "Get Users with Role"],
-    dependencies=[Depends(get_db_session)],
+    dependencies=[
+        Depends(get_db_session),
+        Depends(get_db_session),
+        Depends(authenticator.authenticate),
+        Depends(authenticator.require_role("Admin")),
+    ],
 )
 async def get_users_with_role(
     role_id: UUID, service: UserRoleAssociationService = Depends(get_user_role_association_service)
@@ -280,7 +304,12 @@ async def get_users_with_role(
         },
     },
     tags=["User Role Association", "Get User Roles"],
-    dependencies=[Depends(get_db_session)],
+    dependencies=[
+        Depends(get_db_session),
+        Depends(get_db_session),
+        Depends(authenticator.authenticate),
+        Depends(authenticator.require_role("Admin")),
+    ],
 )
 async def get_user_roles(
     user_id: UUID, service: UserRoleAssociationService = Depends(get_user_role_association_service)

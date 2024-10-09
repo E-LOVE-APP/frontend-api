@@ -34,7 +34,11 @@ router = APIRouter(
         },
     },
     tags=["Users", "Create user"],
-    dependencies=[Depends(get_db_session)],
+    dependencies=[
+        Depends(get_db_session),
+        Depends(authenticator.authenticate),
+        Depends(authenticator.require_role("Admin")),
+    ],
 )
 async def create_user(
     user: UserCreate,
@@ -69,6 +73,7 @@ async def create_user(
     dependencies=[
         Depends(get_db_session),
         Depends(authenticator.authenticate),
+        # Depends(authenticator.require_role("Admin")),
     ],
 )
 async def get_user_by_id(
@@ -98,7 +103,11 @@ async def get_user_by_id(
         },
     },
     tags=["Users", "Get user list", "List"],
-    dependencies=[Depends(get_db_session)],
+    dependencies=[
+        Depends(get_db_session),
+        Depends(authenticator.authenticate),
+        # Depends(authenticator.require_role("Admin")),
+    ],
 )
 async def get_users_list(
     page: int = 1,
@@ -131,7 +140,11 @@ async def get_users_list(
         },
     },
     tags=["Users", "Update user"],
-    dependencies=[Depends(get_db_session)],
+    dependencies=[
+        Depends(get_db_session),
+        Depends(authenticator.authenticate),
+        # Depends(authenticator.require_role("Admin")),
+    ],
 )
 async def update_user(
     user_id: UUID,
@@ -163,7 +176,11 @@ async def update_user(
         },
     },
     tags=["Users", "Delete user"],
-    dependencies=[Depends(get_db_session)],
+    dependencies=[
+        Depends(get_db_session),
+        Depends(authenticator.authenticate),
+        # Depends(authenticator.require_role("Admin")),
+    ],
 )
 async def delete_user(
     user_id: UUID,

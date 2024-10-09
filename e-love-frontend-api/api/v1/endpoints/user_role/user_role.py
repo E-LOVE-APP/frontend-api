@@ -6,6 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from auth.security import Authenticator, authenticator
 from configuration.database import get_db_session
 from core.schemas.errors.httperror import HTTPError
 from core.schemas.user_role.user_role_schema import UserRoleCreate, UserRoleOutput, UserRoleUpdate
@@ -30,7 +31,11 @@ router = APIRouter(
         },
     },
     tags=["User role", "Create user role"],
-    dependencies=[Depends(get_db_session)],
+    dependencies=[
+        Depends(get_db_session),
+        Depends(authenticator.authenticate),
+        # Depends(authenticator.require_role("Admin")),
+    ],
 )
 async def create_user_role(
     user_role_data: UserRoleCreate,
@@ -60,7 +65,11 @@ async def create_user_role(
         },
     },
     tags=["User role", "Get user role"],
-    dependencies=[Depends(get_db_session)],
+    dependencies=[
+        Depends(get_db_session),
+        Depends(authenticator.authenticate),
+        Depends(authenticator.require_role("Admin")),
+    ],
 )
 async def get_role_by_id(
     role_id: UUID,
@@ -89,7 +98,11 @@ async def get_role_by_id(
         },
     },
     tags=["User roles", "Get user roles list", "List"],
-    dependencies=[Depends(get_db_session)],
+    dependencies=[
+        Depends(get_db_session),
+        Depends(authenticator.authenticate),
+        Depends(authenticator.require_role("Admin")),
+    ],
 )
 async def get_user_roles_list(
     db: AsyncSession = Depends(get_db_session),
@@ -116,7 +129,11 @@ async def get_user_roles_list(
         },
     },
     tags=["Users role", "Update user role"],
-    dependencies=[Depends(get_db_session)],
+    dependencies=[
+        Depends(get_db_session),
+        Depends(authenticator.authenticate),
+        Depends(authenticator.require_role("Admin")),
+    ],
 )
 async def update_user_role(
     role_id: UUID,
@@ -148,7 +165,11 @@ async def update_user_role(
         },
     },
     tags=["User role", "Delete user role"],
-    dependencies=[Depends(get_db_session)],
+    dependencies=[
+        Depends(get_db_session),
+        Depends(authenticator.authenticate),
+        Depends(authenticator.require_role("Admin")),
+    ],
 )
 async def delete_user_role(
     role_id: UUID,

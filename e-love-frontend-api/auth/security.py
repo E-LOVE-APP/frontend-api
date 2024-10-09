@@ -49,7 +49,7 @@ class Authenticator:
                 return payload
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Forbidden: insufficient permissions",
+                detail=(f"Forbidden: insufficient permissions. Required roles list: ", role),
             )
 
         return role_checker
