@@ -17,6 +17,8 @@ router = APIRouter(
     prefix="/users",
 )
 
+# TODO: get rid of get_db_session in router-dependencies list
+
 
 # Пример корректного метода, с описанием для swagger; Тэги и responses можно будет отдельно создать в отдельных файлах, чтобы тут легко переиспользовать, чем я потом и займусь.
 # POST-эндпоинт для юзера не подлежит реализации, пока не будет настроен Auth0.
@@ -104,7 +106,6 @@ async def get_user_by_id(
     },
     tags=["Users", "Get user list", "List"],
     dependencies=[
-        Depends(get_db_session),
         Depends(authenticator.authenticate),
         # Depends(authenticator.require_role("Admin")),
     ],

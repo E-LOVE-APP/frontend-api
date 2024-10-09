@@ -23,20 +23,17 @@ RUN if [ "$INSTALL_DEV" = "true" ] ; then \
         poetry install --no-dev --no-interaction --no-ansi ; \
     fi
 
-# Удаляем зависимости для сборки, чтобы уменьшить размер образа
 RUN apt-get purge -y --auto-remove gcc libssl-dev libffi-dev build-essential
 
 FROM python:3.10-slim
 
 WORKDIR /app
 
-# Копируем установленные зависимости из builder
 COPY --from=builder /usr/local /usr/local
 COPY --from=builder /app /app
 
-# Копируем остальной код приложения
 COPY . /app
 
 EXPOSE 8000
 
-CMD ["bash", "-c", "poetry run alembic upgrade head && poetry run uvicorn main:app --host 0.0.0.0 --port 8000 --reload"]
+CMD ["bash", "-c", "poetry run alembic upgrade head && python -m scripts.db_scripts.populate_db && poetry run uvicorn main:app --host 0.0.0.0 --port 8000"]

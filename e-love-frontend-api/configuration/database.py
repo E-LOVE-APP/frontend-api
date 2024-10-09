@@ -2,6 +2,7 @@
 
 import logging
 from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
 import colorlog
 from sqlalchemy import text
@@ -9,9 +10,6 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.ext.declarative import declarative_base
 
 from configuration.config import settings
-
-# from sqlalchemy.orm import sessionmaker
-
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -40,7 +38,7 @@ if not DATABASE_URL:
     raise ValueError("DATABASE_URL must be set in environment variables.")
 
 try:
-    engine = create_async_engine(DATABASE_URL, echo=True)
+    engine = create_async_engine(DATABASE_URL)
     # AsyncSessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False, class_=AsyncSession)
     logger.info("Async SQLAlchemy engine created successfully.")
 except Exception as e:
@@ -51,16 +49,16 @@ Base = declarative_base()
 logger.info("Starting database connection check...")
 
 
-async def get_db_session() -> AsyncSession:
+AsyncSessionLocal = async_sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine,
+    expire_on_commit=False,
+    class_=AsyncSession,
+)
 
-    AsyncSessionLocal = async_sessionmaker(
-        autocommit=False,
-        autoflush=False,
-        bind=engine,
-        expire_on_commit=False,
-        class_=AsyncSession,
-    )
 
+async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as session:
         try:
             yield session
@@ -68,5 +66,3 @@ async def get_db_session() -> AsyncSession:
             await session.rollback()
             logger.error(f"Database session error: {e}")
             raise
-        finally:
-            await session.close()
