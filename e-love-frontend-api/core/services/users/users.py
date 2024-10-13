@@ -1,11 +1,13 @@
 """ User service module """
 
 import logging
+import uuid
+from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import asc, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -13,6 +15,7 @@ from sqlalchemy.orm import selectinload
 from core.db.models.users.users import User
 from core.schemas.users.user_schema import UserUpdateSchema
 from core.services.base_service import BaseService
+from utils.custom_pagination import Paginator
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -95,7 +98,10 @@ class UserService(BaseService):
             )
 
     async def get_users_list(
-        self, page: int = 1, size: int = 0, limit: int = 10, email: Optional[str] = None
+        self,
+        limit: int = 10,
+        email: Optional[str] = None,
+        next_token: Optional[str] = None,
     ) -> List[User]:
         """
         Получает список пользователей с поддержкой пагинации.
@@ -108,14 +114,63 @@ class UserService(BaseService):
         :raises HTTPException: Если произошла ошибка базы данных.
         """
         try:
-            query = select(User).options(selectinload(User.roles))
+            # query = select(User).options(selectinload(User.roles))
+            # if email:
+            #     query = query.where(User.email == email)
+            # query = query.offset((page - 1) * limit).limit(limit)
+
+            # result = await self.db_session.execute(query)
+            # users = result.scalars().all()
+            # return users
+            paginator = Paginator[User](limit=limit)
+            query = select(User)
+
+            # Применение фильтров
             if email:
                 query = query.where(User.email == email)
-            query = query.offset((page - 1) * limit).limit(limit)
 
+            # Обработка токена
+            if next_token:
+                token_data = paginator.decode_token(next_token)
+                last_created_at = datetime.fromisoformat(token_data["created_at"])
+                last_id = uuid.UUID(token_data["id"])
+
+                # Фильтрация по значению курсора
+                query = query.where(
+                    (User.created_at > last_created_at)
+                    | ((User.created_at == last_created_at) & (User.id > last_id))
+                )
+
+            # Сортировка по created_at и id
+            query = query.order_by(asc(User.created_at), asc(User.id))
+
+            # Запрос на одну запись больше для определения наличия следующей страницы
+            query = query.limit(limit + 1)
             result = await self.db_session.execute(query)
             users = result.scalars().all()
-            return users
+
+            # Проверка наличия следующей страницы
+            has_next = len(users) > limit
+            if has_next:
+                users = users[:limit]  # Оставляем только нужное количество записей
+
+            # Генерация токена для следующей страницы
+            next_token_value = None
+            if has_next:
+                last_user = users[-1]
+                last_created_at_str = last_user.created_at.isoformat()
+                last_user_id = str(last_user.id)
+                next_token_value = paginator.encode_token(last_created_at_str, last_user_id)
+
+            # Формирование ответа
+            response = paginator.get_response(
+                model_name="users",
+                items=users,
+                has_next=has_next,
+                next_token=next_token_value,
+            )
+
+            return response
 
         except SQLAlchemyError as e:
             await self.db_session.rollback()

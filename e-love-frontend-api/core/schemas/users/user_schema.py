@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
@@ -37,3 +37,9 @@ class UserOutput(UserBase):
     last_name: str = Field(..., max_length=50, description="Last name of the user")
     email: EmailStr = Field(..., description="Email address of the user")
     user_descr: Optional[str] = Field(None, max_length=500, description="Description of the user")
+
+
+class UsersListResponse(BaseModel):
+    users: List[UserOutput]
+    hasNext: bool
+    nextToken: Optional[str] = None
