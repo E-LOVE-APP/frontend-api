@@ -1,11 +1,13 @@
 """ User service module """
 
 import logging
+import uuid
+from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import asc, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -13,6 +15,7 @@ from sqlalchemy.orm import selectinload
 from core.db.models.users.users import User
 from core.schemas.users.user_schema import UserUpdateSchema
 from core.services.base_service import BaseService
+from utils.custom_pagination import Paginator
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -29,6 +32,7 @@ class UserService(BaseService):
         """
 
         self.db_session = db_session
+        self.paginator = Paginator[User](db_session=db_session, model=User)
 
     async def create_user(self, user_data: dict) -> User:
         """
@@ -95,7 +99,10 @@ class UserService(BaseService):
             )
 
     async def get_users_list(
-        self, page: int = 1, size: int = 0, limit: int = 10, email: Optional[str] = None
+        self,
+        limit: int = 10,
+        email: Optional[str] = None,
+        next_token: Optional[str] = None,
     ) -> List[User]:
         """
         Получает список пользователей с поддержкой пагинации.
@@ -108,14 +115,22 @@ class UserService(BaseService):
         :raises HTTPException: Если произошла ошибка базы данных.
         """
         try:
-            query = select(User).options(selectinload(User.roles))
-            if email:
-                query = query.where(User.email == email)
-            query = query.offset((page - 1) * limit).limit(limit)
+            filters = None
 
-            result = await self.db_session.execute(query)
-            users = result.scalars().all()
-            return users
+            base_query = select(User)
+
+            if email:
+                filters = User.email == email
+
+            response = await self.paginator.paginate_query(
+                base_query=base_query,
+                next_token=next_token,
+                filters=filters,
+                model_name="users",
+                limit=limit,
+            )
+
+            return response
 
         except SQLAlchemyError as e:
             await self.db_session.rollback()
@@ -125,7 +140,6 @@ class UserService(BaseService):
                 detail="An unexpected database error occurred",
             )
 
-    # TODO: cast to generic methods
     async def update_user(self, user_id: UUID, update_data: UserUpdateSchema) -> User:
         """
         Обновляет информацию о пользователе.
@@ -174,7 +188,7 @@ class UserService(BaseService):
         try:
             return await self.delete_object_by_id(User, user_id)
 
-        # Если в других таблицах уже имеются записи про юзеров, мы не сможем удалить этого юзера, пока оттуда не будут удалены так же все его записи. Это Integrity error. Однако, я считаю достаточно целесообразно сделать возможным каскадно удалить все записи, связанные с юзером, при удалении самого юзера - потому-что если он сам хочет удалить аккаунт, или его банят, зачем после этого в БД тогда хранить его информацию? Возможно это не лучшая идея, это мы обсудить 12.10 на roadmap.
+        # Если в других таблицах уже имеются записи про юзеров, мы не сможем удалить этого юзера, пока оттуда не будут удалены так же все его записи. Это Integrity error. Однако, я считаю достаточно целесообразно сделать возможным каскадно удалить все записи, связанные с юзером, при удалении самого юзера - потому-что если он сам хочет удалить аккаунт, или его банят, зачем после этого в БД тогда хранить его информацию? Возможно это не лучшая идея, это мы обсудить 12.10 на roadmap. TODO:
         except IntegrityError as e:
             await self.db_session.rollback()
             logger.error(f"IntegrityError while deleting the user: {e}")

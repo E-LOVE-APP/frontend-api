@@ -10,8 +10,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from auth.security import Authenticator, authenticator
 from configuration.database import get_db_session
 from core.schemas.errors.httperror import HTTPError
-from core.schemas.users.user_schema import UserCreate, UserOutput, UserUpdateSchema
+from core.schemas.users.user_schema import (
+    UserCreate,
+    UserOutput,
+    UsersListResponse,
+    UserUpdateSchema,
+)
 from core.services.users.users import UserService
+from dependencies.validate_query_params import validate_query_params
 
 router = APIRouter(
     prefix="/users",
@@ -93,11 +99,11 @@ async def get_user_by_id(
 
 @router.get(
     "/",
-    response_model=List[UserOutput],
+    response_model=UsersListResponse,
     responses={
         200: {
             "description": "Get users list. Support pagination",
-            "model": List[UserOutput],
+            "model": UsersListResponse,
         },
         500: {
             "description": "Server error.",
@@ -107,12 +113,13 @@ async def get_user_by_id(
     tags=["Users", "Get user list", "List"],
     dependencies=[
         Depends(authenticator.authenticate),
+        validate_query_params(expected_params={"limit", "next_token", "email"}),
         # Depends(authenticator.require_role("Admin")),
     ],
 )
 async def get_users_list(
-    page: int = 1,
     limit: int = 10,
+    next_token: Optional[str] = None,
     email: Optional[str] = None,
     db: AsyncSession = Depends(get_db_session),
 ):
@@ -124,7 +131,7 @@ async def get_users_list(
     - **email**: Filter users by email
     """
     user_service = UserService(db)
-    return await user_service.get_users_list(page=page, limit=limit, email=email)
+    return await user_service.get_users_list(limit=limit, next_token=next_token, email=email)
 
 
 @router.put(
