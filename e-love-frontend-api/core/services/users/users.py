@@ -32,6 +32,7 @@ class UserService(BaseService):
         """
 
         self.db_session = db_session
+        self.paginator = Paginator[User](db_session=db_session, model=User)
 
     async def create_user(self, user_data: dict) -> User:
         """
@@ -114,60 +115,19 @@ class UserService(BaseService):
         :raises HTTPException: Если произошла ошибка базы данных.
         """
         try:
-            # query = select(User).options(selectinload(User.roles))
-            # if email:
-            #     query = query.where(User.email == email)
-            # query = query.offset((page - 1) * limit).limit(limit)
+            filters = None
 
-            # result = await self.db_session.execute(query)
-            # users = result.scalars().all()
-            # return users
-            paginator = Paginator[User](limit=limit)
-            query = select(User)
+            base_query = select(User)
 
-            # Применение фильтров
             if email:
-                query = query.where(User.email == email)
+                filters = User.email == email
 
-            # Обработка токена
-            if next_token:
-                token_data = paginator.decode_token(next_token)
-                last_created_at = datetime.fromisoformat(token_data["created_at"])
-                last_id = uuid.UUID(token_data["id"])
-
-                # Фильтрация по значению курсора
-                query = query.where(
-                    (User.created_at > last_created_at)
-                    | ((User.created_at == last_created_at) & (User.id > last_id))
-                )
-
-            # Сортировка по created_at и id
-            query = query.order_by(asc(User.created_at), asc(User.id))
-
-            # Запрос на одну запись больше для определения наличия следующей страницы
-            query = query.limit(limit + 1)
-            result = await self.db_session.execute(query)
-            users = result.scalars().all()
-
-            # Проверка наличия следующей страницы
-            has_next = len(users) > limit
-            if has_next:
-                users = users[:limit]  # Оставляем только нужное количество записей
-
-            # Генерация токена для следующей страницы
-            next_token_value = None
-            if has_next:
-                last_user = users[-1]
-                last_created_at_str = last_user.created_at.isoformat()
-                last_user_id = str(last_user.id)
-                next_token_value = paginator.encode_token(last_created_at_str, last_user_id)
-
-            # Формирование ответа
-            response = paginator.get_response(
+            response = await self.paginator.paginate_query(
+                base_query=base_query,
+                next_token=next_token,
+                filters=filters,
                 model_name="users",
-                items=users,
-                has_next=has_next,
-                next_token=next_token_value,
+                limit=limit,
             )
 
             return response
@@ -180,7 +140,6 @@ class UserService(BaseService):
                 detail="An unexpected database error occurred",
             )
 
-    # TODO: cast to generic methods
     async def update_user(self, user_id: UUID, update_data: UserUpdateSchema) -> User:
         """
         Обновляет информацию о пользователе.
@@ -229,7 +188,7 @@ class UserService(BaseService):
         try:
             return await self.delete_object_by_id(User, user_id)
 
-        # Если в других таблицах уже имеются записи про юзеров, мы не сможем удалить этого юзера, пока оттуда не будут удалены так же все его записи. Это Integrity error. Однако, я считаю достаточно целесообразно сделать возможным каскадно удалить все записи, связанные с юзером, при удалении самого юзера - потому-что если он сам хочет удалить аккаунт, или его банят, зачем после этого в БД тогда хранить его информацию? Возможно это не лучшая идея, это мы обсудить 12.10 на roadmap.
+        # Если в других таблицах уже имеются записи про юзеров, мы не сможем удалить этого юзера, пока оттуда не будут удалены так же все его записи. Это Integrity error. Однако, я считаю достаточно целесообразно сделать возможным каскадно удалить все записи, связанные с юзером, при удалении самого юзера - потому-что если он сам хочет удалить аккаунт, или его банят, зачем после этого в БД тогда хранить его информацию? Возможно это не лучшая идея, это мы обсудить 12.10 на roadmap. TODO:
         except IntegrityError as e:
             await self.db_session.rollback()
             logger.error(f"IntegrityError while deleting the user: {e}")

@@ -41,5 +41,5 @@ class UserOutput(UserBase):
 
 class UsersListResponse(BaseModel):
     users: List[UserOutput]
-    hasNext: bool
-    nextToken: Optional[str] = None
+    has_next: bool
+    next_token: Optional[str] = None

@@ -17,6 +17,7 @@ from core.schemas.users.user_schema import (
     UserUpdateSchema,
 )
 from core.services.users.users import UserService
+from dependencies.validate_query_params import validate_query_params
 
 router = APIRouter(
     prefix="/users",
@@ -112,6 +113,7 @@ async def get_user_by_id(
     tags=["Users", "Get user list", "List"],
     dependencies=[
         Depends(authenticator.authenticate),
+        validate_query_params(expected_params={"limit", "next_token", "email"}),
         # Depends(authenticator.require_role("Admin")),
     ],
 )
