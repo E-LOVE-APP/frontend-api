@@ -68,7 +68,7 @@ async def create_user_role(
     dependencies=[
         Depends(get_db_session),
         Depends(authenticator.authenticate),
-        Depends(authenticator.require_role("Admin")),
+        # Depends(authenticator.require_role("Admin")),
     ],
 )
 async def get_role_by_id(
@@ -101,7 +101,7 @@ async def get_role_by_id(
     dependencies=[
         Depends(get_db_session),
         Depends(authenticator.authenticate),
-        Depends(authenticator.require_role("Admin")),
+        # Depends(authenticator.require_role("Admin")),
     ],
 )
 async def get_user_roles_list(
@@ -132,7 +132,7 @@ async def get_user_roles_list(
     dependencies=[
         Depends(get_db_session),
         Depends(authenticator.authenticate),
-        Depends(authenticator.require_role("Admin")),
+        # Depends(authenticator.require_role("Admin")),
     ],
 )
 async def update_user_role(
@@ -168,7 +168,7 @@ async def update_user_role(
     dependencies=[
         Depends(get_db_session),
         Depends(authenticator.authenticate),
-        Depends(authenticator.require_role("Admin")),
+        # Depends(authenticator.require_role("Admin")),
     ],
 )
 async def delete_user_role(
