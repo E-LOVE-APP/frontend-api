@@ -3,7 +3,7 @@
 import logging
 import uuid
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -29,74 +29,27 @@ class UserService(BaseService):
         Инициализирует экземпляр UserService.
 
         :param db_session: Асинхронная сессия базы данных.
+        :param paginator: Вагинатор.
         """
 
         self.db_session = db_session
         self.paginator = Paginator[User](db_session=db_session, model=User)
 
-    async def create_user(self, user_data: dict) -> User:
-        """
-        Создает нового пользователя.
+    async def _preprocess_user(self, user: User, data: Dict[str, Any]) -> None:
+        password = data.pop("password", None)
+        if password:
+            user.set_password(password)
 
-        :param user_data: Словарь с данными пользователя.
-        :return: Созданный объект пользователя.
-        :raises HTTPException: Если email уже используется или произошла ошибка базы данных.
-        """
-        try:
-            # Проверка, существует ли пользователь с таким email
-            query = select(User).where(User.email == user_data["email"])
-            result = await self.db_session.execute(query)
-            user_exists = result.scalar_one_or_none()
-
-            if user_exists:
-                logger.warning(
-                    f"Someone trying to create a user with existing email: {user_data['email']}"
-                )
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="This email is already taken by someone",
-                )
-
-            new_user = User(
-                first_name=user_data["first_name"],
-                last_name=user_data["last_name"],
-                email=user_data["email"],
-            )
-
-            new_user.set_password(user_data["password"])
-
-            self.db_session.add(new_user)
-            await self.db_session.commit()
-            await self.db_session.refresh(new_user)
-
-            return new_user
-
-        except SQLAlchemyError as e:
-            await self.db_session.rollback()
-            logger.error(f"Unexpected error while creating user: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected database error occurred",
-            )
+    async def create_user(self, user_data: Dict[str, Any]) -> User:
+        return await self.create_object(
+            model=User,
+            data=user_data,
+            unique_fields=["email"],
+            preprocess_func=self._preprocess_user,
+        )
 
     async def get_user_by_id(self, user_id: UUID) -> User:
-        """
-        Получает пользователя по его ID.
-        Использует унаследованный метод абстрактного класса BaseService.
-
-        :param user_id: Идентификатор пользователя.
-        :return: Объект пользователя.
-        :raises HTTPException: Если пользователь не найден или произошла ошибка базы данных.
-        """
-        try:
-            return await self.get_object_by_id(User, user_id)
-        except SQLAlchemyError as e:
-            await self.db_session.rollback()
-            logger.error(f"An error occurred while getting the user: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Database session error while getting the user.",
-            )
+        return await self.get_object_by_id(User, user_id)
 
     async def get_users_list(
         self,
@@ -141,42 +94,12 @@ class UserService(BaseService):
             )
 
     async def update_user(self, user_id: UUID, update_data: UserUpdateSchema) -> User:
-        """
-        Обновляет информацию о пользователе.
-
-        :param user_id: Идентификатор пользователя.
-        :param update_data: Словарь с обновленными данными пользователя.
-        :return: Обновленный объект пользователя.
-        :raises HTTPException: Если пользователь не найден или произошла ошибка базы данных.
-        """
-        try:
-            user = await self.get_user_by_id(user_id)
-
-            if "password" in update_data:
-                user.set_password(update_data.pop("password"))
-
-            for key, value in update_data.items():
-                setattr(user, key, value)
-
-            self.db_session.add(user)
-            await self.db_session.commit()
-            await self.db_session.refresh(user)
-            return user
-
-        except IntegrityError as e:
-            await self.db_session.rollback()
-            logger.error(f"IntegrityError while updating the user: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Cannot update the user due to integrity constraints.",
-            )
-        except SQLAlchemyError as e:
-            await self.db_session.rollback()
-            logger.error(f"Unexpected error while updating user: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected database error occurred",
-            )
+        return await self.update_object(
+            model=User,
+            object_id=user_id,
+            data=update_data.dict(exclude_unset=True),
+            preprocess_func=self._preprocess_user,
+        )
 
     async def delete_user(self, user_id: UUID) -> User:
         """
@@ -195,12 +118,4 @@ class UserService(BaseService):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Cannot delete the user because it is referenced by other records.",
-            )
-
-        except SQLAlchemyError as e:
-            await self.db_session.rollback()
-            logger.error(f"Unexpected error while deleting user: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected database error occurred",
             )

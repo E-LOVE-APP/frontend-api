@@ -1,7 +1,7 @@
 """ User role service module """
 
 import logging
-from typing import List
+from typing import Any, Dict, List
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -20,61 +20,30 @@ class UserRoleService(BaseService):
     """Сервисный класс для управления ролями пользователя"""
 
     def __init__(self, db_session: AsyncSession):
-        self.db_session = db_session
+        """
+        Инициализирует экземпляр UserRoleService.
 
-    async def create_user_role(self, role_data: dict) -> UserRole:
-        try:
-            # Проверка, существует ли роль с таким именем
-            query = select(UserRole).where(UserRole.role_name == role_data["role_name"])
-            result = await self.db_session.execute(query)
-            role_exists = result.scalar_one_or_none()
+        :param db_session: Асинхронная сессия базы данных.
+        """
+        super().__init__(db_session)
 
-            if role_exists:
-                logger.warning(
-                    f"Someone trying to create a user-role with existing role name: {role_data['role_name']}"
-                )
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="This role is already exists",
-                )
+    async def create_user_role(self, role_data: Dict[str, Any]) -> UserRole:
+        """
+        Создает новую роль пользователя.
 
-            new_role = UserRole(
-                role_name=role_data["role_name"],
-                # TODO: добавить сюда функционал текущего юзера, чтобы user_id брался из текущей сессии юзера. Пока не будет настроен JWT - этот метод использовать бессмысленно.
-            )
-
-            self.db_session.add(new_role)
-            await self.db_session.commit()
-            await self.db_session.refresh(new_role)
-
-            return new_role
-
-        except SQLAlchemyError as e:
-            await self.db_session.rollback()
-            logger.error(f"Unexpected error while creating user role: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected database error occurred",
-            )
+        :param role_data: Словарь с данными роли.
+        :return: Созданный объект роли пользователя.
+        """
+        return await self.create_object(model=UserRole, data=role_data, unique_fields=["role_name"])
 
     async def get_role_by_id(self, role_id: UUID) -> UserRole:
         """
         Получает роль пользователя по её ID.
-        Использует унаследованный метод абстрактного класса BaseService.
 
         :param role_id: Идентификатор роли.
         :return: Объект роли пользователя.
-        :raises HTTPException: Если роль не найдена или произошла ошибка базы данных.
         """
-        try:
-            return await self.get_object_by_id(UserRole, role_id)
-        except SQLAlchemyError as e:
-            await self.db_session.rollback()
-            logger.error(f"An error occurred while getting the role: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Database session error while getting the role.",
-            )
+        return await self.get_object_by_id(UserRole, role_id)
 
     async def get_user_roles_list(self) -> List[UserRole]:
         """
@@ -96,53 +65,20 @@ class UserRoleService(BaseService):
                 detail="An unexpected database error occurred",
             )
 
-    async def update_user_role(self, role_id: UUID, update_role_data: dict) -> UserRole:
+    async def update_user_role(self, role_id: UUID, update_data: Dict[str, Any]) -> UserRole:
         """
         Обновляет информацию о роли пользователя.
 
         :param role_id: Идентификатор роли.
-        :param update_role_data: Словарь с обновленными данными роли.
+        :param update_data: Словарь с обновленными данными роли.
         :return: Обновленный объект роли пользователя.
-        :raises HTTPException: Если роль не найдена или произошла ошибка базы данных.
         """
-        try:
-            role = await self.get_role_by_id(role_id)
-
-            for key, value in update_role_data.items():
-                setattr(role, key, value)
-
-            await self.db_session.commit()
-            await self.db_session.refresh(role)
-            return role
-
-        except Exception as e:
-            await self.db_session.rollback()
-            logger.error(f"Unexpected error while updating this user role: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected database error occurred",
-            )
+        return await self.update_object(model=UserRole, object_id=role_id, data=update_data)
 
     async def delete_user_role(self, role_id: UUID) -> None:
         """
         Удаляет роль пользователя из базы данных.
 
         :param role_id: Идентификатор роли.
-        :raises HTTPException: Если роль не найдена или произошла ошибка базы данных.
         """
-        try:
-            return await self.delete_object_by_id(UserRole, role_id)
-        except IntegrityError as e:
-            await self.db_session.rollback()
-            logger.error(f"IntegrityError while deleting the user role: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Cannot delete the user role because it is referenced by other records.",
-            )
-        except SQLAlchemyError as e:
-            await self.db_session.rollback()
-            logger.error(f"Unexpected error while deleting the role: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected database error occurred",
-            )
+        await self.delete_object_by_id(UserRole, role_id)
