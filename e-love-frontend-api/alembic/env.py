@@ -15,6 +15,7 @@ from core.db.models.intermediate_models.user_roles import user_roles_table
 from core.db.models.posts.user_post import UserPost
 from core.db.models.users.user_gender import UserGender
 from core.db.models.users.user_images import UserImages
+from core.db.models.users.user_interaction import UserInteraction
 from core.db.models.users.user_role import UserRole
 from core.db.models.users.user_status import UserStatus
 from core.db.models.users.users import User
