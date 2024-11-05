@@ -40,6 +40,7 @@ class UserService(BaseService):
         if password:
             user.set_password(password)
 
+    # TODO: можно отрефакторить, если в user_data заместо any добавить доп. тип в виде словаря (модели юзера) для лучшей типизации
     async def create_user(self, user_data: Dict[str, Any]) -> User:
         return await self.create_object(
             model=User,
@@ -60,8 +61,6 @@ class UserService(BaseService):
         """
         Получает список пользователей с поддержкой пагинации.
 
-        :param page: Номер страницы (начиная с 1).
-        :param size: Не используется (зарезервировано для будущего использования).
         :param limit: Количество записей на странице.
         :param email: Фильтр по email.
         :return: Список объектов пользователей.
@@ -102,12 +101,6 @@ class UserService(BaseService):
         )
 
     async def delete_user(self, user_id: UUID) -> User:
-        """
-        Удаляет пользователя из базы данных.
-
-        :param user_id: Идентификатор пользователя.
-        :raises HTTPException: Если пользователь не найден или произошла ошибка базы данных.
-        """
         try:
             return await self.delete_object_by_id(User, user_id)
 
