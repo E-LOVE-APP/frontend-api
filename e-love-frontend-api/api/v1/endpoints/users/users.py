@@ -23,11 +23,7 @@ router = APIRouter(
     prefix="/users",
 )
 
-# TODO: get rid of get_db_session in router-dependencies list
 
-
-# Пример корректного метода, с описанием для swagger; Тэги и responses можно будет отдельно создать в отдельных файлах, чтобы тут легко переиспользовать, чем я потом и займусь.
-# POST-эндпоинт для юзера не подлежит реализации, пока не будет настроен Auth0.
 @router.post(
     "/",
     response_model=UserOutput,
@@ -43,7 +39,6 @@ router = APIRouter(
     },
     tags=["Users", "Create user"],
     dependencies=[
-        Depends(get_db_session),
         Depends(authenticator.authenticate),
         Depends(authenticator.require_role("Admin")),
     ],
@@ -79,9 +74,7 @@ async def create_user(
     },
     tags=["Users", "Get user"],
     dependencies=[
-        Depends(get_db_session),
         Depends(authenticator.authenticate),
-        # Depends(authenticator.require_role("Admin")),
     ],
 )
 async def get_user_by_id(
@@ -114,7 +107,6 @@ async def get_user_by_id(
     dependencies=[
         Depends(authenticator.authenticate),
         validate_query_params(expected_params={"limit", "next_token", "email"}),
-        # Depends(authenticator.require_role("Admin")),
     ],
 )
 async def get_users_list(
@@ -149,9 +141,7 @@ async def get_users_list(
     },
     tags=["Users", "Update user"],
     dependencies=[
-        Depends(get_db_session),
         Depends(authenticator.authenticate),
-        # Depends(authenticator.require_role("Admin")),
     ],
 )
 async def update_user(
@@ -185,9 +175,7 @@ async def update_user(
     },
     tags=["Users", "Delete user"],
     dependencies=[
-        Depends(get_db_session),
         Depends(authenticator.authenticate),
-        # Depends(authenticator.require_role("Admin")),
     ],
 )
 async def delete_user(
