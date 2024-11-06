@@ -1,21 +1,15 @@
 # api/v1/endpoints/users/users.py
 
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPBearer
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.security import Authenticator, authenticator
+from auth.security import authenticator
 from configuration.database import get_db_session
 from core.schemas.errors.httperror import HTTPError
-from core.schemas.users.user_schema import (
-    UserCreate,
-    UserOutput,
-    UsersListResponse,
-    UserUpdateSchema,
-)
+from core.schemas.users.user_schema import UserCreate, UserOutput, UsersListResponse, UserUpdate
 from core.services.users.users import UserService
 from dependencies.validate_query_params import validate_query_params
 
@@ -146,7 +140,7 @@ async def get_users_list(
 )
 async def update_user(
     user_id: UUID,
-    user_update: UserUpdateSchema,
+    user_update: UserUpdate,
     db: AsyncSession = Depends(get_db_session),
 ):
     """

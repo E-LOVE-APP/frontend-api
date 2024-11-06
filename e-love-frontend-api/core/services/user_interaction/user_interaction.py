@@ -1,16 +1,13 @@
 """ User interaction service module """
 
 import logging
-import uuid
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from sqlalchemy import asc, select
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from core.db.models.users.user_interaction import UserInteraction
 from core.services.base_service import BaseService

@@ -1,19 +1,16 @@
 """ User service module """
 
 import logging
-import uuid
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from sqlalchemy import asc, select
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from core.db.models.users.users import User
-from core.schemas.users.user_schema import UserUpdateSchema
+from core.schemas.users.user_schema import UserUpdate
 from core.services.base_service import BaseService
 from utils.custom_pagination import Paginator
 
@@ -92,7 +89,7 @@ class UserService(BaseService):
                 detail="An unexpected database error occurred",
             )
 
-    async def update_user(self, user_id: UUID, update_data: UserUpdateSchema) -> User:
+    async def update_user(self, user_id: UUID, update_data: UserUpdate) -> User:
         return await self.update_object(
             model=User,
             object_id=user_id,

@@ -3,12 +3,33 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
 
-# TODO: Добавить валидаций
-"""Basic Users-model pydantic schema"""
+"""Pydantic schemas for Users."""
 
 
 class UserBase(BaseModel):
-    id: Optional[UUID] = Field(None, description="An id of the user in UUID format")
+    """Base user model with common fields."""
+
+    first_name: str = Field(..., max_length=50, min_length=1, description="First name of the user")
+    last_name: str = Field(..., max_length=50, min_length=1, description="Last name of the user")
+    email: EmailStr = Field(..., description="Unique email address of the user")
+
+    class Config:
+        orm_mode = True
+        extra = "forbid"
+
+
+class UserCreate(UserBase):
+    """Schema for creating a new user."""
+
+    password: str = Field(..., min_length=6, description="Password for the user")
+
+    class Config:
+        extra = "forbid"
+
+
+class UserUpdate(UserBase):
+    """Schema for updating an existing user."""
+
     first_name: Optional[str] = Field(
         None, max_length=50, min_length=1, description="First name of the user"
     )
@@ -16,30 +37,29 @@ class UserBase(BaseModel):
         None, max_length=50, min_length=1, description="Last name of the user"
     )
     email: Optional[EmailStr] = Field(None, description="Unique email address of the user")
+    password: Optional[str] = Field(None, min_length=6, description="Password for the user")
 
     class Config:
-        orm_mode = True
-
-
-class UserCreate(UserBase):
-    first_name: str = Field(..., max_length=50, min_length=1, description="First name of the user")
-    last_name: str = Field(..., max_length=50, min_length=1, description="Last name of the user")
-    email: EmailStr = Field(..., description="Unique email address of the user")
-    password: str = Field(..., min_length=6, description="Password for the user")
-
-
-class UserUpdateSchema(UserBase):
-    password: Optional[str] = Field(None, min_length=6, description="Password of the user")
+        extra = "forbid"
 
 
 class UserOutput(UserBase):
-    first_name: str = Field(..., max_length=50, description="First name of the user")
-    last_name: str = Field(..., max_length=50, description="Last name of the user")
-    email: EmailStr = Field(..., description="Email address of the user")
+    """Schema for displaying user data."""
+
+    id: UUID = Field(..., description="ID of the user in UUID format")
     user_descr: Optional[str] = Field(None, max_length=500, description="Description of the user")
+
+    class Config:
+        orm_mode = True
+        extra = "forbid"
 
 
 class UsersListResponse(BaseModel):
+    """Schema for a list of users with pagination information."""
+
     users: List[UserOutput]
     has_next: bool
     next_token: Optional[str] = None
+
+    class Config:
+        extra = "forbid"

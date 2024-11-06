@@ -1,22 +1,20 @@
 # api/v1/endpoints/user_interaction/user_interaction.py
 
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPBearer
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.security import Authenticator, authenticator
+from auth.security import authenticator
 from configuration.database import get_db_session
 from core.schemas.errors.httperror import HTTPError
-
-# from core.schemas.users.user_schema import (
-#     UserCreate,
-#     UserOutput,
-#     UsersListResponse,
-#     UserUpdateSchema,
-# )
+from core.schemas.user_interaction.user_interaction_schema import (
+    UserInteractionCreate,
+    UserInteractionOutput,
+    UserInteractionsListResponse,
+    UserInteractionUpdate,
+)
 from core.services.user_interaction.user_interaction import UserInteractionService
 from dependencies.validate_query_params import validate_query_params
 
@@ -53,7 +51,7 @@ async def create_user_interaction(
 
     """
     user_interaction_service = UserInteractionService(db)
-    return await user_interaction_service.create_user(user_interaction)
+    return await user_interaction_service.create_user_interaction(user_interaction)
 
 
 @router.get(
@@ -146,7 +144,7 @@ async def get_user_interactions_list(
 )
 async def update_user_interaction(
     interaction_id: UUID,
-    update_data: UserInteractionUpdateSchema,
+    update_data: UserInteractionUpdate,
     db: AsyncSession = Depends(get_db_session),
 ):
     """
@@ -156,7 +154,7 @@ async def update_user_interaction(
     - **user_update**: Fields to update
     """
     user_interaction_service = UserInteractionService(db)
-    return await user_interaction_service.update_user_interaction(user_id, update_data)
+    return await user_interaction_service.update_user_interaction(interaction_id, update_data)
 
 
 @router.delete(
