@@ -7,7 +7,7 @@ from core.db.models.intermediate_models.user_categories import user_categories_t
 from ..base import BaseModel
 
 
-class Categories(BaseModel):
+class Category(BaseModel):
     """
     Модель категорий различных интересов.
 
