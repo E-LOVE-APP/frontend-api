@@ -21,7 +21,7 @@ class Categories(BaseModel):
 
     __tablename__ = "categories"
 
-    category_name: Column[str] = Column(String(50), nullable=False)
+    category_name: Column[str] = Column(String(50), unique=True, nullable=False)
     category_descr: Column[str] = Column(String(250), nullable=False)
     category_icon: Column[str] = Column(String(50), nullable=True)
 
