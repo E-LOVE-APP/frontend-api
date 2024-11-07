@@ -75,7 +75,7 @@ class Paginator(Generic[T]):
         except Exception:
             raise ValueError("Invalid token")
 
-    # TODO: удалить комментарии в следующем ПР
+    # TODO: зарефакторить, слишком много информации для чтения глазами. Разбить на отдельные функции по SOLID-принципам.
     async def paginate_query(
         self,
         base_query: Select,

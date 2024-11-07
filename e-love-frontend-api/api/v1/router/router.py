@@ -3,6 +3,7 @@
 # type: ignore
 from fastapi import APIRouter
 
+from api.v1.endpoints.user_interaction.user_interaction import router as user_interaction_router
 from api.v1.endpoints.user_role.user_role import router as user_role_router
 from api.v1.endpoints.user_role_association.user_roles_association import (
     router as user_role_association_router,
@@ -15,6 +16,7 @@ api_router.include_router(user_role_router, prefix="/api/v1", tags=["User role"]
 api_router.include_router(
     user_role_association_router, prefix="/api/v1", tags=["User role association"]
 )
+api_router.include_router(user_interaction_router, prefix="/api/v1", tags=["User interactions"])
 
 
 # ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⠿⠟⢿⣻⣟⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢻⡝⠬⢋⣤⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⢋⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣦⣄⡀⠀⠀⠀⠀⢀⠢⠑⡌⠲⣉

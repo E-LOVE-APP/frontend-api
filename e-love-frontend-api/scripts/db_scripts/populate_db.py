@@ -16,6 +16,7 @@ from core.db.models.intermediate_models.user_genders import user_genders_table
 from core.db.models.intermediate_models.user_roles import user_roles_table
 from core.db.models.posts.user_post import UserPost
 from core.db.models.users.user_gender import UserGender
+from core.db.models.users.user_interaction import UserInteraction
 from core.db.models.users.user_role import UserRole
 from core.db.models.users.user_status import UserStatus
 from core.db.models.users.users import User
@@ -42,12 +43,8 @@ async def get_db_session() -> AsyncSession:
             raise
 
 
-# Функция для генерации детерминированного UUID
 def deterministic_uuid(name: str) -> str:
     return str(uuid.uuid5(uuid.NAMESPACE_DNS, name))
-
-
-# Функции для заполнения вспомогательных таблиц
 
 
 async def populate_user_statuses(db_session: AsyncSession):
@@ -144,9 +141,6 @@ async def populate_user_roles(db_session: AsyncSession):
     return role_objects
 
 
-# Функции для заполнения основных таблиц
-
-
 async def populate_users(db_session: AsyncSession, statuses, num_users=500):
     """
     Создаёт и добавляет в базу данных случайных пользователей.
@@ -177,9 +171,6 @@ async def populate_users(db_session: AsyncSession, statuses, num_users=500):
         user_objects.append(user)
     await db_session.commit()
     return user_objects
-
-
-# Функции для заполнения промежуточных таблиц
 
 
 async def assign_roles_to_users(db_session: AsyncSession, users, roles):
@@ -278,6 +269,39 @@ async def assign_categories_to_posts(db_session: AsyncSession, posts, categories
     await db_session.commit()
 
 
+async def populate_user_interactions(db_session: AsyncSession, users):
+    """
+    Создаёт и добавляет в базу данных взаимодействия между пользователями.
+
+    :param db_session: Сессия базы данных.
+    :param users: Список объектов User.
+    """
+    interaction_types = ["MATCH", "REJECT"]
+    user_ids = [user.id for user in users]
+
+    interaction_objects = []
+    for user in users:
+        # Выбираем случайное количество взаимодействий для каждого пользователя
+        num_interactions = random.randint(5, 15)
+        # Получаем список возможных целевых пользователей (исключая самого себя)
+        possible_targets = [uid for uid in user_ids if uid != user.id]
+        # Выбираем случайных целевых пользователей
+        target_user_ids = random.sample(
+            possible_targets, min(num_interactions, len(possible_targets))
+        )
+
+        for target_user_id in target_user_ids:
+            interaction = UserInteraction(
+                user_id=user.id,
+                target_user_id=target_user_id,
+                interaction_type=random.choice(interaction_types),
+            )
+            db_session.add(interaction)
+            interaction_objects.append(interaction)
+    await db_session.commit()
+    return interaction_objects
+
+
 async def main():
     """
     Основная функция скрипта для заполнения базы данных.
@@ -313,6 +337,9 @@ async def main():
 
             print("Assigning categories to the posts...")
             await assign_categories_to_posts(db_session, posts, categories)
+
+            print("Populating user interactions...")
+            await populate_user_interactions(db_session, users)
 
             print("Database has been successfully populated with consistent data.")
         except Exception as e:

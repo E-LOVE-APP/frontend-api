@@ -1,8 +1,9 @@
 import asyncio
-from typing import Any, Callable, Dict, List, Optional, Type, TypeVar
+from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 from uuid import UUID
 
 from fastapi import HTTPException
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,7 +13,7 @@ ModelType = TypeVar("ModelType")
 
 class BaseService:
     """
-    Базовый сервисный класс, предоставляющий общие методы для работы с моделями базы данных.
+    Базовый сервисный класс, предоставляющий имплементацию общих CRUD-методов для работы с моделями базы данных.
     """
 
     def __init__(self, db_session: AsyncSession):
@@ -98,7 +99,7 @@ class BaseService:
         self,
         model: Type[ModelType],
         object_id: UUID,
-        data: Dict[str, Any],
+        data: Union[Dict[str, Any], BaseModel],
         preprocess_func: Optional[Callable[[Dict[str, Any]], Any]] = None,
     ) -> ModelType:
         """
@@ -113,6 +114,9 @@ class BaseService:
         """
         try:
             obj = await self.get_object_by_id(model, object_id)
+
+            if isinstance(data, BaseModel):
+                data = data.dict(exclude_unset=True)
 
             # Предобработка данных
             if preprocess_func:
