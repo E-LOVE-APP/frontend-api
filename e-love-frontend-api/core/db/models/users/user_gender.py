@@ -19,7 +19,7 @@ class UserGender(BaseModel):
 
     __tablename__ = "user_gender"
 
-    gender_name: Column[str] = Column(String(50), nullable=False)
+    gender_name: Column[str] = Column(String(50), unique=True, nullable=False)
 
     users: Mapped[List["User"]] = relationship(
         "User", secondary=user_genders_table, back_populates="genders"
