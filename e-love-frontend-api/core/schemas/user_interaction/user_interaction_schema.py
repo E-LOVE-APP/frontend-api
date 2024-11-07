@@ -61,7 +61,7 @@ class UserInteractionOutput(UserInteractionBase):
 class UserInteractionsListResponse(BaseModel):
     """Schema for a list of user interactions with pagination information."""
 
-    userInteractions: List[UserInteractionOutput]
+    user_interaction: List[UserInteractionOutput]
     has_next: bool
     next_token: Optional[str] = None
 
