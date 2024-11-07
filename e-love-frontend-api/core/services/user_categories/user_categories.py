@@ -12,13 +12,12 @@ from core.db.models.users.users import User
 from core.services.categories.categories import CategoriesService
 from core.services.users.users import UserService
 
-
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
 class UserCategoriesAssociationService:
-    """Сервис управления гендерами пользователей."""
+    """Сервис управления категориями пользователей."""
 
     def __init__(
         self,
@@ -35,7 +34,7 @@ class UserCategoriesAssociationService:
         Добавляет категорию пользователю.
 
         :param user_id: Идентификатор пользователя.
-        :param category_id: Идентификатор гендера.
+        :param category_id: Идентификатор категории.
         :raises HTTPException: Если пользователь или катгеория не найдены, или произошла ошибка базы данных.
         """
         try:
