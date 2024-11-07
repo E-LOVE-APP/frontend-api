@@ -18,8 +18,7 @@ logger.setLevel(logging.INFO)
 
 class UserGenderService(BaseService):
     """Сервисный класс для управления ролями пользователя"""
-    
-    
+
     def __init__(self, db_session: AsyncSession):
         """
         Инициализирует экземпляр UserGenderService.
@@ -27,7 +26,7 @@ class UserGenderService(BaseService):
         :param db_session: Асинхронная сессия базы данных.
         """
         super().__init__(db_session)
-        
+
     async def create_gender(self, gender_data: Dict[str, Any]) -> UserGender:
         """
         Создает новый гендер ( так мемно это писать roflanEbalo)
@@ -35,8 +34,10 @@ class UserGenderService(BaseService):
         :param gender_data: Словарь с данными гендера.
         :return: Созданный объект гендера пользователя.
         """
-        return await self.create_object(model=UserGender, data=gender_data, unique_fields=["gender_name"])
-    
+        return await self.create_object(
+            model=UserGender, data=gender_data, unique_fields=["gender_name"]
+        )
+
     async def get_gender_by_id(self, gender_id: UUID) -> UserGender:
         """
         Получает гендер пользователя по его ID.
@@ -45,7 +46,7 @@ class UserGenderService(BaseService):
         :return: Объект гендера пользователя.
         """
         return await self.get_object_by_id(UserGender, gender_id)
-    
+
     async def get_genders_list(self) -> List[UserGender]:
         """
         Думаю тут обязательно нужна будет пагинация, ведь гендеров аж целых 2
@@ -64,7 +65,7 @@ class UserGenderService(BaseService):
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="An unexpected database error occurred",
             )
-    
+
     async def update_gender(self, gender_id: UUID, update_data: Dict[str, Any]) -> UserGender:
         """
         Обновляет информацию о гендере пользователя.
@@ -74,7 +75,7 @@ class UserGenderService(BaseService):
         :return: Обновленный объект гендера пользователя.
         """
         return await self.update_object(model=UserGender, object_id=gender_id, data=update_data)
-    
+
     async def delete_gender(self, gender_id: UUID) -> None:
         """
         Удаляет гендер пользователя из базы данных.

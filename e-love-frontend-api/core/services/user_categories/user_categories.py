@@ -15,16 +15,20 @@ from core.services.users.users import UserService
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+
 class UserCategoriesAssociationService:
     """Сервис управления гендерами пользователей."""
-    
+
     def __init__(
-        self, db_session: AsyncSession, user_service: UserService, categories_service: CategoriesService
+        self,
+        db_session: AsyncSession,
+        user_service: UserService,
+        category_service: CategoriesService,
     ):
         self.db_session = db_session
         self.user_service = user_service
         self.category_service = category_service
-        
+
     async def add_category_to_user(self, user_id: UUID, category_id: UUID) -> None:
         """
         Добавляет категорию пользователю.
@@ -42,7 +46,6 @@ class UserCategoriesAssociationService:
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="This user already has this category",
                 )
-
             user.categories.append(category)
             await self.db_session.commit()
         except SQLAlchemyError as e:
@@ -52,16 +55,8 @@ class UserCategoriesAssociationService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Database session error while adding category to the user.",
             )
-            
-    
-    async def add_categories_to_user(self, user_id: UUID, category_ids: List[UUID]) -> None:
-         """
-        Добавляет несколько категорий (>1) пользователю. (BULK)
 
-        :param user_id: Идентификатор пользователя.
-        :param category_ids: Список идентификаторов категорий.
-        :raises HTTPException: Если пользователь или категории не найдены, или произошла ошибка базы данных.
-        """
+    async def add_categories_to_user(self, user_id: UUID, category_ids: List[UUID]) -> None:
         try:
             user = await self.user_service.get_user_by_id(user_id)
             categories_to_add = []
@@ -69,7 +64,6 @@ class UserCategoriesAssociationService:
                 category = await self.category_service.get_category_by_id(category_id)
                 if category not in user.categories:
                     categories_to_add.append(category)
-
             if categories_to_add:
                 user.categories.extend(categories_to_add)
                 await self.db_session.commit()
@@ -85,7 +79,7 @@ class UserCategoriesAssociationService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Database session error while adding categories to the user.",
             )
-            
+
     async def update_user_categories(self, user_id: UUID, new_categories_ids: List[UUID]) -> None:
         """
         Обновляет категории пользователя, заменяя существующие на новые. (>1)
@@ -113,7 +107,7 @@ class UserCategoriesAssociationService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Database session error while updating user categories.",
             )
-            
+
     async def remove_category_from_user(self, user_id: UUID, category_id: UUID) -> None:
         """
         Удаляет категорию у пользователя.
