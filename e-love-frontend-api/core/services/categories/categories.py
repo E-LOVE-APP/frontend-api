@@ -53,7 +53,9 @@ class CategoriesService(BaseService):
                     detail="An unexpected database error occurred",
                 )
 
-        async def update_category(self, category_id: UUID, update_data: Dict[str, Any]) -> Categories:
+        async def update_category(
+            self, category_id: UUID, update_data: Dict[str, Any]
+        ) -> Categories:
             return await self.update_object(model=Category, object_id=category_id, data=update_data)
 
         async def delete_category(self, category_id: UUID) -> None:
