@@ -3,14 +3,13 @@ import uuid
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
+from core.db.models.categories.categories import Categories
+from core.services.base_service import BaseService
 from fastapi import HTTPException, status
 from sqlalchemy import asc, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-
-from core.db.models.categories.categories import Category
-from core.services.base_service import BaseService
 from utils.custom_pagination import Paginator
 
 logger = logging.getLogger(__name__)
