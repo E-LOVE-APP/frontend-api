@@ -24,6 +24,7 @@ class UserInteraction(BaseModel):
 
     target_user_id: Column[UUID] = Column(ForeignKey("user.id"), nullable=False)
 
+    # TODO: add enum in the future
     interaction_type: Column[str] = Column(String(10), nullable=False)
 
     user: Mapped["User"] = relationship(
