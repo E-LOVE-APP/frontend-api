@@ -134,7 +134,7 @@ class UserCategoriesAssociationService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Database session error while removing category from the user.",
             )
-    
+
     async def get_user_categories(self, user_id: UUID) -> List[Category]:
         """
         Получает все связанные с пользователем категории .
@@ -144,7 +144,8 @@ class UserCategoriesAssociationService:
         """
         try:
             user = await self.user_service.get_user_by_id(user_id)
-            return user.categories except SQLAlchemyError as e:
+            return user.categories
+        except SQLAlchemyError as e:
             await self.db_session.rollback()
             logger.error(f"An error occurred while fetching categories for the user: {e}")
             raise HTTPException(
