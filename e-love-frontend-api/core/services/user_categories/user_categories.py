@@ -26,7 +26,7 @@ class UserCategoriesAssociationService:
         self.category_service = category_service
         
     async def add_category_to_user(self, user_id: UUID, category_id: UUID) -> None:
-         """
+        """
         Добавляет категорию пользователю.
 
         :param user_id: Идентификатор пользователя.

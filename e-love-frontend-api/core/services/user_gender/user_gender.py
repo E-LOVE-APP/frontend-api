@@ -46,7 +46,7 @@ class UserGenderService(BaseService):
         """
         return await self.get_object_by_id(UserGender, gender_id)
     
-     async def get_genders_list(self) -> List[UserGender]:
+    async def get_genders_list(self) -> List[UserGender]:
         """
         Думаю тут обязательно нужна будет пагинация, ведь гендеров аж целых 2
         :return: Список объектов ролей пользователей.

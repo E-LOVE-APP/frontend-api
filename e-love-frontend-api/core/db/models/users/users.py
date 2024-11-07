@@ -64,8 +64,8 @@ class User(BaseModel):
     roles: Mapped[List["UserRole"]] = relationship(
         "UserRole", secondary=user_roles_table, back_populates="users"
     )
-    categories: Mapped[List["Category"]] = relationship(
-        "Category", secondary=user_categories_table, back_populates="users"
+    categories: Mapped[List["Categories"]] = relationship(
+        "Categories", secondary=user_categories_table, back_populates="users"
     )
 
     def set_password(self, password: str) -> None:
