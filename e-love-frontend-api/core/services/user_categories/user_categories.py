@@ -144,9 +144,6 @@ class UserCategoriesAssociationService:
         """
         try:
             user = await self.user_service.get_user_by_id(user_id)
-            if not user:
-                logger.error(f"User with ID {user_id} not found")
-                raise HTTPException(status_code=404, detail="User not found")
             return user.categories
         except SQLAlchemyError as e:
             await self.db_session.rollback()
