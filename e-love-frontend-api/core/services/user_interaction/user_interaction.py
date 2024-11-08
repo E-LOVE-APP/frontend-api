@@ -29,13 +29,6 @@ class UserInteractionService(BaseService):
         self.db_session = db_session
         self.paginator = Paginator[UserInteraction](db_session=db_session, model=UserInteraction)
 
-    # TODO:
-    # get_user_interactions_list с опцией поиска по user_id;
-    # get_user_interaction_by_id;
-    # create_user_interaction -> только с match/reject (match/reject можно будет обязательно проверять с помощью pydantic-схемы, по идее)
-    # update_user_interaction;
-    # delete_user_interaction;
-
     async def get_user_interaction_by_id(self, interaction_id: UUID) -> UserInteraction:
         return await self.get_object_by_id(UserInteraction, interaction_id)
 
@@ -64,6 +57,38 @@ class UserInteractionService(BaseService):
 
             if target_user_id:
                 filters = UserInteraction.target_user_id == target_user_id
+
+            response = await self.paginator.paginate_query(
+                limit=limit,
+                base_query=base_query,
+                model_name="user_interaction",
+                filters=filters,
+                next_token=next_token,
+            )
+
+            return response
+
+        except SQLAlchemyError as e:
+            await self.db_session.rollback()
+            logger.error(f"Unexpected error while fetching user interactions list: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="An unexpected database error occurred",
+            )
+
+    # WHY IDS:
+    # Решено обойтись возвратом только списка id-шников просмотренных юзеров вместо полноценных объектов, для того чтобы
+    # не добавлять лишних зависимостей. В бизнес-логике (матчинга) нету особой разницы.
+    async def get_viewed_users_list(
+        self,
+        current_user_id: UUID = None,
+        limit: int = 10,
+        next_token: Optional[str] = None,
+    ) -> List[UserInteraction.target_user_id]:
+        try:
+            query = select(UserInteraction.target_user_id).where(
+                UserInteraction.user_id == current_user_id
+            )
 
             response = await self.paginator.paginate_query(
                 limit=limit,
