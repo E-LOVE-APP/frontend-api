@@ -7,7 +7,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.db.models.categories.categories import Category
+from core.db.models.categories.categories import Categories
 from core.db.models.users.users import User
 from core.services.categories.categories import CategoriesService
 from core.services.users.users import UserService
@@ -135,15 +135,18 @@ class UserCategoriesAssociationService:
                 detail="Database session error while removing category from the user.",
             )
 
-    async def get_user_categories(self, user_id: UUID) -> List[Category]:
+    async def get_user_categories(self, user_id: UUID) -> List[Categories]:
         """
-        Получает все связанные с пользователем категории .
+        Получает все связанные с пользователем категории.
         :param user_id: Идентификатор пользователя.
         :return: Список категорий пользователя.
         :raises HTTPException: Если пользователь не найден или произошла ошибка базы данных.
         """
         try:
             user = await self.user_service.get_user_by_id(user_id)
+            if not user:
+                logger.error(f"User with ID {user_id} not found")
+                raise HTTPException(status_code=404, detail="User not found")
             return user.categories
         except SQLAlchemyError as e:
             await self.db_session.rollback()
