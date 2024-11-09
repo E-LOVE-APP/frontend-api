@@ -1,3 +1,6 @@
+from enum import Enum
+
+
 class MatchingType(Enum):
     STANDARD = "standard"
     MAX_COMPATIBILITY = "max_compatibility"
