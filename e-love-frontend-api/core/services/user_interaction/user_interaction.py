@@ -79,33 +79,48 @@ class UserInteractionService(BaseService):
     # WHY IDS:
     # Решено обойтись возвратом только списка id-шников просмотренных юзеров вместо полноценных объектов, для того чтобы
     # не добавлять лишних зависимостей. В бизнес-логике (матчинга) нету особой разницы.
+
     async def get_viewed_users_list(
         self,
-        current_user_id: UUID = None,
+        current_user_id: UUID,
         limit: int = 10,
         next_token: Optional[str] = None,
-    ) -> List[UserInteraction.target_user_id]:
+        paginate: bool = True,
+    ) -> List[UUID]:
+        """
+        Получает список идентификаторов пользователей, с которыми текущий пользователь уже взаимодействовал.
+
+        :param current_user_id: Идентификатор текущего пользователя.
+        :param limit: Количество записей для пагинации.
+        :param next_token: Токен для продолжения пагинации.
+        :param paginate: Флаг, определяющий, применять ли пагинацию.
+        :return: Список идентификаторов пользователей.
+        """
         try:
             query = select(UserInteraction.target_user_id).where(
                 UserInteraction.user_id == current_user_id
             )
 
-            response = await self.paginator.paginate_query(
-                limit=limit,
-                base_query=base_query,
-                model_name="user_interaction",
-                filters=filters,
-                next_token=next_token,
-            )
+            if paginate:
+                response = await self.paginator.paginate_query(
+                    limit=limit,
+                    base_query=query,
+                    model_name="user_interaction",
+                    next_token=next_token,
+                )
+                viewed_users_ids = [item.target_user_id for item in response]
+            else:
+                result = await self.db_session.execute(query)
+                viewed_users_ids = [row[0] for row in result.fetchall()]
 
-            return response
+            return viewed_users_ids
 
         except SQLAlchemyError as e:
             await self.db_session.rollback()
-            logger.error(f"Unexpected error while fetching user interactions list: {e}")
+            logger.error(f"Ошибка при получении списка просмотренных пользователей: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected database error occurred",
+                detail="Произошла ошибка при получении списка просмотренных пользователей.",
             )
 
     # TODO: refactor - add the interaction type instead "Any"

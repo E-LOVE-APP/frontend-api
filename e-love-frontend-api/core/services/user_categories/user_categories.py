@@ -144,6 +144,7 @@ class UserCategoriesAssociationService:
         """
         try:
             user = await self.user_service.get_user_by_id(user_id)
+            # TODO: словить кейс на 0 категорий
             return user.categories
         except SQLAlchemyError as e:
             await self.db_session.rollback()
