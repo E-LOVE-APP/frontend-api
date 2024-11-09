@@ -115,6 +115,7 @@ class UsersMatchingService:
 
         return overlap_percentage
 
+    # TODO: add typization
     def build_main_query(self, potential_users_subq: Subquery, overlap_percentage: int):
         """
         Формирует основной запрос для получения пользователей с нужным процентом совпадения.
@@ -168,12 +169,20 @@ class UsersMatchingService:
                 current_user_id, paginate=False
             )
 
+            potential_users_subquery = self.build_potential_users_subquery(
+                current_user_id=current_user_id,
+                curr_user_category_ids=curr_user_categories_ids,
+                viewed_users_ids=viewed_users_ids,
+            )
+
+            overlap_percentage_result = self.calculate_overlap_percentage(
+                potential_users_subq=potential_users_subquery,
+                num_curr_user_categories=len(curr_user_categories_ids),
+            )
+
             main_query = self.build_main_query(
-                self.build_potential_users_subquery(
-                    current_user_id=current_user_id,
-                    curr_user_category_ids=curr_user_categories_ids,
-                    viewed_users_ids=viewed_users_ids,
-                )
+                potential_users_subq=potential_users_subquery,
+                overlap_percentage=overlap_percentage_result,
             )
 
             response = await self.paginator.paginate_query(
