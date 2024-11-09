@@ -17,12 +17,22 @@ from core.services.user_categories.user_categories import UserCategoriesAssociat
 from core.services.user_interaction.user_interaction import UserInteractionService
 from utils.custom_pagination import Paginator
 
+from utils.enums.matching_type import MatchingType, MATCHING_PERCENTAGE_RANGES
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
 class UsersMatchingService:
-    """ """
+    """
+    Сервис для подбора пользователей на основе совпадения категорий.
+
+    Этот сервис содержит методы для получения списка пользователей,
+    которые совпадают по определенному проценту категорий с текущим пользователем.
+    Он использует другие сервисы для получения данных о категориях пользователя и
+    взаимодействиях с другими пользователями, а также предоставляет функциональность
+    для построения и выполнения запросов к базе данных с использованием SQLAlchemy.
+    """
 
     def __init__(
         self,
@@ -31,10 +41,19 @@ class UsersMatchingService:
         user_categories_service: UserCategoriesAssociationService,
         paginator: Paginator,
     ):
+        """
+        Инициализирует экземпляр UsersMatchingService.
+
+        Параметры:
+            - db_session: Асинхронная сессия базы данных.
+            - user_interaction_service: Сервис взаимодействий пользователей.
+            - user_categories_service: Сервис категорий пользователей.
+            - paginator: Кастомный пагинатор для результатов запроса.
+        """
         self.db_session = db_session
         self.user_interaction_service = user_interaction_service
         self.user_categories_service = user_categories_service
-        self.paginator = Paginator
+        self.paginator = paginator
 
     def build_potential_users_subquery(
         self,
@@ -84,7 +103,7 @@ class UsersMatchingService:
 
     def calculate_overlap_percentage(
         self, potential_users_subq: Subquery, num_curr_user_categories: int
-    ):
+    ) -> int:
         """
         Вычисляет процент совпадения категорий для потенциальных пользователей.
 
@@ -115,14 +134,19 @@ class UsersMatchingService:
 
         return overlap_percentage
 
-    # TODO: add typization
-    def build_main_query(self, potential_users_subq: Subquery, overlap_percentage: int):
+    def build_main_query(
+        self,
+        potential_users_subq: Subquery,
+        overlap_percentage: Label,
+        matching_type: MatchingType = MatchingType.STANDARD,
+    ) -> Select:
         """
         Формирует основной запрос для получения пользователей с нужным процентом совпадения.
 
         Параметры:
             - potential_users_subq: Подзапрос с потенциальными пользователями.
             - overlap_percentage: Поле с процентом совпадения.
+            - matching_type: Тип матчинга, по которому работает подбор юзеров. Влияет на процентовку.
 
         Возвращает:
             - Select: Основной запрос для выполнения.
@@ -131,7 +155,8 @@ class UsersMatchingService:
             Этот метод строит основной запрос, который выбирает пользователей из таблицы `User`,
             соединяя их с подзапросом `potential_users_subq` по идентификатору пользователя.
             Затем применяет фильтр по проценту совпадения, выбирая пользователей с процентом
-            совпадения от 20% до 40%. Результаты сортируются по убыванию процента совпадения.
+            совпадения от 20% до 40%. (в стандартном варианте)
+            Результаты сортируются по убыванию процента совпадения.
 
         SQL-представление основного запроса:
             SELECT User.*
@@ -140,10 +165,12 @@ class UsersMatchingService:
             WHERE overlap_percentage BETWEEN 20 AND 40
             ORDER BY overlap_percentage DESC;
         """
+        min_percentage, max_percentage = MATCHING_PERCENTAGE_RANGES[matching_type]
+
         base_query = (
             select(User)
             .join(potential_users_subq, User.id == potential_users_subq.c.user_id)
-            .where(and_(overlap_percentage >= 20, overlap_percentage <= 40))
+            .where(and_(overlap_percentage >= min_percentage, overlap_percentage <= max_percentage))
             .order_by(overlap_percentage.desc())
         )
 
@@ -154,7 +181,28 @@ class UsersMatchingService:
         current_user_id: UUID,
         limit: int = 10,
         next_token: Optional[str] = None,
+        matching_type: MatchingType = MatchingType.STANDARD,
     ) -> List[User]:
+        """
+        Возвращает список пользователей, соответствующих критериям совпадения по категориям.
+
+        Параметры:
+            - current_user_id: Идентификатор текущего пользователя.
+            - limit: Количество пользователей для возврата (по умолчанию 10).
+            - next_token: Токен для пагинации (по умолчанию None).
+            - matching_type: Тип матчинга, определяющий диапазон процента совпадения.
+
+        Возвращает:
+            - List[User]: Список пользователей, соответствующих критериям.
+
+        Исключения:
+            - HTTPException: В случае ошибки базы данных или других проблем.
+
+        Описание:
+            Этот метод получает категории текущего пользователя, вычисляет потенциальных пользователей,
+            с которыми есть общие категории, и вычисляет процент совпадения. Затем формирует основной
+            запрос с учетом выбранного типа матчинга и возвращает результаты с применением пагинации.
+        """
         try:
             curr_user_categories = await self.user_categories_service.get_user_categories(
                 current_user_id
@@ -162,7 +210,8 @@ class UsersMatchingService:
 
             curr_user_categories_ids = [category.id for category in curr_user_categories]
 
-            if not curr_user_category_ids:
+            # TODO: переместить эту проверку в метод get_user_categories
+            if not curr_user_categories_ids:
                 return []
 
             viewed_users_ids = await self.user_interaction_service.get_viewed_users_list(
@@ -183,6 +232,7 @@ class UsersMatchingService:
             main_query = self.build_main_query(
                 potential_users_subq=potential_users_subquery,
                 overlap_percentage=overlap_percentage_result,
+                matching_type=matching_type,
             )
 
             response = await self.paginator.paginate_query(
