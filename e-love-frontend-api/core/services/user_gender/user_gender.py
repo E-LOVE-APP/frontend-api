@@ -1,13 +1,12 @@
 """ User gender service module """
 
 import logging
-import uuid
 from typing import Any, Dict, List
 from uuid import UUID
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db.models.users.user_gender import UserGender
@@ -36,7 +35,7 @@ class UserGenderService(BaseService):
         :return: Созданный объект гендера пользователя.
         """
         return await self.create_object(
-            model=UserGender, data=gender_data, unique_fields=["gender_name"]
+            model=UserGender, data=gender_data.dict(), unique_fields=["gender_name"]
         )
 
     async def get_gender_by_id(self, gender_id: UUID) -> UserGender:
@@ -67,7 +66,7 @@ class UserGenderService(BaseService):
                 detail="An unexpected database error occurred",
             )
 
-    async def update_gender(self, gender_id: UUID, update_data: Dict[str, Any]) -> UserGender:
+    async def update_gender(self, gender_id: UUID, update_data: UserGender) -> UserGender:
         """
         Обновляет информацию о гендере пользователя.
 
@@ -75,7 +74,11 @@ class UserGenderService(BaseService):
         :param update_data: Словарь с обновленными данными гендера.
         :return: Обновленный объект гендера пользователя.
         """
-        return await self.update_object(model=UserGender, object_id=gender_id, data=update_data)
+        return await self.update_object(
+            model = UserGender,
+            object_id = gender_id,
+            data = update_data.dict(exclude_unset=True)
+        )
 
     async def delete_gender(self, gender_id: UUID) -> None:
         """
