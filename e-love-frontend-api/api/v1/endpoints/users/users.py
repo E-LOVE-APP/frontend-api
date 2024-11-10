@@ -112,7 +112,6 @@ async def get_users_list(
     """
     Get a list of users with pagination.
 
-    - **page**: Page number (starting from 1)
     - **limit**: Number of users per page
     - **email**: Filter users by email
     """

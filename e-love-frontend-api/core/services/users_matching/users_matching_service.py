@@ -38,7 +38,7 @@ class UsersMatchingService:
         db_session: AsyncSession,
         user_interaction_service: UserInteractionService,
         user_categories_service: UserCategoriesAssociationService,
-        paginator: Paginator,
+        # paginator: Paginator,
     ):
         """
         Инициализирует экземпляр UsersMatchingService.
@@ -52,7 +52,7 @@ class UsersMatchingService:
         self.db_session = db_session
         self.user_interaction_service = user_interaction_service
         self.user_categories_service = user_categories_service
-        self.paginator = paginator
+        self.paginator = Paginator[User](db_session=db_session, model=User)
 
     def build_potential_users_subquery(
         self,

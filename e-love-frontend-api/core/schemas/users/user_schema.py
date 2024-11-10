@@ -63,3 +63,9 @@ class UsersListResponse(BaseModel):
 
     class Config:
         extra = "forbid"
+
+
+class UsersMatchingListResponse(BaseModel):
+    users: List[UserOutput]
+    total: int
+    next_token: Optional[str] = None
