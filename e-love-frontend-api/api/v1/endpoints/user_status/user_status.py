@@ -9,8 +9,8 @@ from configuration.database import get_db_session
 from core.schemas.errors.httperror import HTTPError
 from core.schemas.user_status.user_status_schema import (
     UserStatusCreate,
-    UserStatusUpdate,
     UserStatusOutput,
+    UserStatusUpdate,
 )
 from core.services.user_status.user_status import UserStatusService
 

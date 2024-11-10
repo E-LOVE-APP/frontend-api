@@ -6,12 +6,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth.security import Authenticator, authenticator
 from configuration.database import get_db_session
-from core.schemas.errors.httperror import HTTPError
 from core.schemas.categories.categories_schema import (
     CategoryCreate,
     CategoryOutput,
     CategoryUpdateSchema,
 )
+from core.schemas.errors.httperror import HTTPError
 from core.services.categories.categories import CategoriesService
 
 router = APIRouter(

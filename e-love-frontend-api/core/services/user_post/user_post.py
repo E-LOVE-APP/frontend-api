@@ -7,8 +7,8 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.schemas.posts.user_post_schema import PostCreate
 from core.db.models.posts.user_post import UserPost
+from core.schemas.posts.user_post_schema import PostCreate
 from core.services.base_service import BaseService
 from utils.custom_pagination import Paginator
 
