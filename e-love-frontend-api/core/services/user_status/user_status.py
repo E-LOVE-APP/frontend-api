@@ -71,9 +71,7 @@ class UserStatusService(BaseService):
         :return: Обновленный объект статуса пользователя.
         """
         return await self.update_object(
-            model = UserStatus,
-            object_id = status_id,
-            data = update_data.dict(exclude_unset=True)
+            model=UserStatus, object_id=status_id, data=update_data.dict(exclude_unset=True)
         )
 
     async def delete_status(self, status_id: UUID) -> None:

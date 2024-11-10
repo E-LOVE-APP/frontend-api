@@ -33,8 +33,8 @@ class UserPostService(BaseService):
         # Чтобы создать объект необходимо преоброзовать модель в словарь
         post_data_dict = post_data.dict()
         return await self.create_object(
-            model = UserPost,
-            data = post_data_dict,
+            model=UserPost,
+            data=post_data_dict,
         )
 
     async def get_post_by_id(self, post_id: UUID) -> UserPost:
@@ -56,9 +56,7 @@ class UserPostService(BaseService):
 
     async def update_post(self, post_id: UUID, update_data: UserPost) -> UserPost:
         return await self.update_object(
-            model=UserPost,
-            object_id=post_id,
-            data=update_data.dict(exclude_unset=True)
+            model=UserPost, object_id=post_id, data=update_data.dict(exclude_unset=True)
         )
 
     async def delete_post(self, post_id: UUID) -> None:

@@ -75,9 +75,7 @@ class UserGenderService(BaseService):
         :return: Обновленный объект гендера пользователя.
         """
         return await self.update_object(
-            model = UserGender,
-            object_id = gender_id,
-            data = update_data.dict(exclude_unset=True)
+            model=UserGender, object_id=gender_id, data=update_data.dict(exclude_unset=True)
         )
 
     async def delete_gender(self, gender_id: UUID) -> None:

@@ -28,9 +28,7 @@ class CategoriesService(BaseService):
         # Чтобы создать объект необходимо преоброзовать модель в словарь
         category_data_dict = category_data.dict()
         return await self.create_object(
-            model=Categories,
-            data=category_data_dict,
-            unique_fields=["category_name"]
+            model=Categories, data=category_data_dict, unique_fields=["category_name"]
         )
 
     async def get_category_by_id(self, category_id: UUID) -> Categories:
@@ -53,9 +51,7 @@ class CategoriesService(BaseService):
     async def update_category(self, category_id: UUID, update_data: Categories) -> Categories:
         # Чтобы обновить объект необходимо преоброзовать модель в словарь
         return await self.update_object(
-            model=Categories,
-            object_id=category_id,
-            data=update_data.dict(exclude_unset=True)
+            model=Categories, object_id=category_id, data=update_data.dict(exclude_unset=True)
         )
 
     async def delete_category(self, category_id: UUID) -> None:
