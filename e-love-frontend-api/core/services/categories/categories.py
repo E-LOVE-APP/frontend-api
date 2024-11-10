@@ -24,9 +24,13 @@ class CategoriesService(BaseService):
         self.db_session = db_session
         self.paginator = Paginator[Categories](db_session=db_session, model=Categories)
 
-    async def create_category(self, category_data: Dict[str, Any]) -> Categories:
+    async def create_category(self, category_data: Categories) -> Categories:
+        # Чтобы создать объект необходимо преоброзовать модель в словарь
+        category_data_dict = category_data.dict()
         return await self.create_object(
-            model=Categories, data=category_data, unique_fields=["category_name"]
+            model=Categories,
+            data=category_data_dict,
+            unique_fields=["category_name"]
         )
 
     async def get_category_by_id(self, category_id: UUID) -> Categories:
@@ -46,8 +50,13 @@ class CategoriesService(BaseService):
                 detail="An unexpected database error occurred",
             )
 
-    async def update_category(self, category_id: UUID, update_data: Dict[str, Any]) -> Categories:
-        return await self.update_object(model=Categories, object_id=category_id, data=update_data)
+    async def update_category(self, category_id: UUID, update_data: Categories) -> Categories:
+        # Чтобы обновить объект необходимо преоброзовать модель в словарь
+        return await self.update_object(
+            model=Categories,
+            object_id=category_id,
+            data=update_data.dict(exclude_unset=True)
+        )
 
     async def delete_category(self, category_id: UUID) -> None:
         await self.delete_object_by_id(Categories, category_id)
