@@ -6,12 +6,13 @@ from pydantic import BaseModel, Field
 # TODO: Добавить валидаций
 """Basic Posts-model pydantic schema"""
 
+
 class PostBase(BaseModel):
     id: Optional[UUID] = Field(None, description="An id of the post in UUID format")
     post_title: Optional[str] = Field(
         None, max_length=250, min_length=1, description="Name of the post"
     )
-    
+
     class Config:
         orm_mode = True
 

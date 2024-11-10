@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 # TODO: Добавить валидаций
 """Basic User gender model pydantic schema"""
 
+
 class UserGenderBase(BaseModel):
     id: Optional[UUID] = Field(None, description="An id of the gender in UUID format")
     gender_name: Optional[str] = Field(

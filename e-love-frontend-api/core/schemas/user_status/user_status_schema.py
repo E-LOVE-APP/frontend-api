@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 # TODO: Добавить валидаций
 """Basic User status model pydantic schema"""
 
+
 class UserStatusBase(BaseModel):
     id: Optional[UUID] = Field(None, description="An id of the user status in UUID format")
     status_name: Optional[str] = Field(
