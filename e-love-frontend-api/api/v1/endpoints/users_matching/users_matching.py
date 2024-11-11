@@ -4,13 +4,14 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth.security import authenticator
 from configuration.database import get_db_session
 from core.db.models.users.users import User
 from core.schemas.errors.httperror import HTTPError
-from core.schemas.users.user_schema import UsersListResponse, UsersMatchingListResponse
+from core.schemas.users.user_schema import UserOutput, UsersListResponse, UsersMatchingListResponse
 from core.services.categories.categories import CategoriesService
 from core.services.user_categories.user_categories import UserCategoriesAssociationService
 from core.services.user_interaction.user_interaction import UserInteractionService
@@ -39,9 +40,9 @@ router = APIRouter(prefix="/users-matching")
     tags=["Users", "Get user list", "List"],
     dependencies=[
         Depends(authenticator.authenticate),
-        validate_query_params(
-            expected_params={"current_user_id", "limit", "next_token", "matching_type"}
-        ),
+        # validate_query_params(
+        #     expected_params={"current_user_id", "limit", "next_token", "matching_type"}
+        # ),
     ],
 )
 async def get_matching_users_list(
@@ -62,7 +63,6 @@ async def get_matching_users_list(
 
     # REMARK: так лучше не делать
     # TODO: зарефакторить в следующих тикетах
-    # paginator = Paginator(db_session=db, model=User)
 
     user_service = UserService(db_session=db)
     category_service = CategoriesService(db_session=db)
@@ -78,17 +78,16 @@ async def get_matching_users_list(
         user_categories_service=user_categories_service,
     )
 
-    users = await users_matching_service.get_matching_users_list(
+    matching_users, total, next_token = await users_matching_service.get_matching_users_list(
         current_user_id=current_user_id,
         limit=limit,
         matching_type=matching_type,
         next_token=next_token,
     )
 
-    response_data = UsersMatchingListResponse(
-        users=users,
-        total=len(users),
-        next_token=next_token,  # or get it from the paginator if applicable
-    )
+    # Конвертируем пользователей в Pydantic модели
+    matching_users_output = [UserOutput.from_orm(user) for user in matching_users]
 
-    return response_data
+    return UsersMatchingListResponse(
+        matching_users=matching_users_output, total=total, next_token=next_token
+    )

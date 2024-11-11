@@ -1,7 +1,7 @@
 """ Users matching service module """
 
 import logging
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Select, Subquery
 from sqlalchemy.sql.elements import Label
 
+from core.db.models.categories.categories import Categories
 from core.db.models.intermediate_models.user_categories import user_categories_table
 from core.db.models.users.users import User
 from core.services.user_categories.user_categories import UserCategoriesAssociationService
@@ -175,13 +176,20 @@ class UsersMatchingService:
 
         return base_query
 
+    # TODO: перенести в utils
+    async def get_total_count(self, main_query: Select) -> int:
+        count_query = select(func.count()).select_from(main_query.subquery())
+        total_result = await self.db_session.execute(count_query)
+        total = total_result.scalar_one()
+        return total
+
     async def get_matching_users_list(
         self,
         current_user_id: UUID,
         limit: int = 10,
         next_token: Optional[str] = None,
         matching_type: MatchingType = MatchingType.STANDARD,
-    ) -> List[User]:
+    ) -> Tuple[List[User], int, Optional[str]]:
         """
         Возвращает список пользователей, соответствующих критериям совпадения по категориям.
 
@@ -192,7 +200,7 @@ class UsersMatchingService:
             - matching_type: Тип матчинга, определяющий диапазон процента совпадения.
 
         Возвращает:
-            - List[User]: Список пользователей, соответствующих критериям.
+            - Tuple[List[User], int, Optional[str]]: Список пользователей, соответствующих критериям.
 
         Исключения:
             - HTTPException: В случае ошибки базы данных или других проблем.
@@ -204,9 +212,8 @@ class UsersMatchingService:
         """
         try:
             curr_user_categories = await self.user_categories_service.get_user_categories(
-                current_user_id
+                user_id=current_user_id
             )
-
             curr_user_categories_ids = [category.id for category in curr_user_categories]
 
             # TODO: переместить эту проверку в метод get_user_categories
@@ -234,14 +241,21 @@ class UsersMatchingService:
                 matching_type=matching_type,
             )
 
-            response = await self.paginator.paginate_query(
+            paginated_response = await self.paginator.paginate_query(
                 limit=limit,
                 base_query=main_query,
                 model_name="matching_users",
                 next_token=next_token,
             )
 
-            return response
+            # Используем три строчки внизу для того чтобы вернуть Tuple в виде:
+            # {matching_users: List[Users], total: len(matching_users), next_token: str}
+
+            matching_users = paginated_response["matching_users"]
+            total = await self.get_total_count(main_query=main_query)
+            next_token = paginated_response["next_token"]
+
+            return matching_users, total, next_token
 
         except SQLAlchemyError as e:
             await self.db_session.rollback()

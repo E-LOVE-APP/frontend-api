@@ -51,6 +51,7 @@ class UserOutput(UserBase):
 
     class Config:
         orm_mode = True
+        from_attributes = True
         extra = "forbid"
 
 
@@ -66,6 +67,9 @@ class UsersListResponse(BaseModel):
 
 
 class UsersMatchingListResponse(BaseModel):
-    users: List[UserOutput]
+    matching_users: List[UserOutput]
     total: int
     next_token: Optional[str] = None
+
+    class Config:
+        extra = "forbid"
