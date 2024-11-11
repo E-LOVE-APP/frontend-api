@@ -29,13 +29,6 @@ class UserInteractionService(BaseService):
         self.db_session = db_session
         self.paginator = Paginator[UserInteraction](db_session=db_session, model=UserInteraction)
 
-    # TODO:
-    # get_user_interactions_list с опцией поиска по user_id;
-    # get_user_interaction_by_id;
-    # create_user_interaction -> только с match/reject (match/reject можно будет обязательно проверять с помощью pydantic-схемы, по идее)
-    # update_user_interaction;
-    # delete_user_interaction;
-
     async def get_user_interaction_by_id(self, interaction_id: UUID) -> UserInteraction:
         return await self.get_object_by_id(UserInteraction, interaction_id)
 
@@ -81,6 +74,53 @@ class UserInteractionService(BaseService):
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="An unexpected database error occurred",
+            )
+
+    # WHY IDS:
+    # Решено обойтись возвратом только списка id-шников просмотренных юзеров вместо полноценных объектов, для того чтобы
+    # не добавлять лишних зависимостей. В бизнес-логике (матчинга) нету особой разницы.
+
+    async def get_viewed_users_list(
+        self,
+        current_user_id: UUID,
+        limit: int = 10,
+        next_token: Optional[str] = None,
+        paginate: bool = True,
+    ) -> List[UUID]:
+        """
+        Получает список идентификаторов пользователей, с которыми текущий пользователь уже взаимодействовал.
+
+        :param current_user_id: Идентификатор текущего пользователя.
+        :param limit: Количество записей для пагинации.
+        :param next_token: Токен для продолжения пагинации.
+        :param paginate: Флаг, определяющий, применять ли пагинацию.
+        :return: Список идентификаторов пользователей.
+        """
+        try:
+            query = select(UserInteraction.target_user_id).where(
+                UserInteraction.user_id == current_user_id
+            )
+
+            if paginate:
+                response = await self.paginator.paginate_query(
+                    limit=limit,
+                    base_query=query,
+                    model_name="user_interaction",
+                    next_token=next_token,
+                )
+                viewed_users_ids = [item.target_user_id for item in response]
+            else:
+                result = await self.db_session.execute(query)
+                viewed_users_ids = [row[0] for row in result.fetchall()]
+
+            return viewed_users_ids
+
+        except SQLAlchemyError as e:
+            await self.db_session.rollback()
+            logger.error(f"Ошибка при получении списка просмотренных пользователей: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Произошла ошибка при получении списка просмотренных пользователей.",
             )
 
     # TODO: refactor - add the interaction type instead "Any"

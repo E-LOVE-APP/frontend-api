@@ -4,10 +4,13 @@ from typing import List
 from uuid import UUID
 
 from fastapi import HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from core.db.models.categories.categories import Categories
+from core.db.models.intermediate_models.user_categories import user_categories_table
 from core.db.models.users.users import User
 from core.services.categories.categories import CategoriesService
 from core.services.users.users import UserService
@@ -143,8 +146,10 @@ class UserCategoriesAssociationService:
         :raises HTTPException: Если пользователь не найден или произошла ошибка базы данных.
         """
         try:
-            user = await self.user_service.get_user_by_id(user_id)
+            user = await self.user_service.get_user_by_id(user_id=user_id)
+
             return user.categories
+
         except SQLAlchemyError as e:
             await self.db_session.rollback()
             logger.error(f"An error occurred while fetching categories for the user: {e}")

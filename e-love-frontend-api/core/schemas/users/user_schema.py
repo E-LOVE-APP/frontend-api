@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
 
+from core.schemas.users_categories.users_categories_schema import CategoryOutput
+
 """Pydantic schemas for Users."""
 
 
@@ -48,10 +50,12 @@ class UserOutput(UserBase):
 
     id: UUID = Field(..., description="ID of the user in UUID format")
     user_descr: Optional[str] = Field(None, max_length=500, description="Description of the user")
+    categories: Optional[List[CategoryOutput]] = None
 
     class Config:
         orm_mode = True
         extra = "forbid"
+        from_attributes = True
 
 
 class UsersListResponse(BaseModel):
@@ -59,6 +63,15 @@ class UsersListResponse(BaseModel):
 
     users: List[UserOutput]
     has_next: bool
+    next_token: Optional[str] = None
+
+    class Config:
+        extra = "forbid"
+
+
+class UsersMatchingListResponse(BaseModel):
+    matching_users: List[UserOutput]
+    total: int
     next_token: Optional[str] = None
 
     class Config:
