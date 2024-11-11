@@ -12,6 +12,7 @@ from configuration.database import get_db_session
 from core.db.models.users.users import User
 from core.schemas.errors.httperror import HTTPError
 from core.schemas.users.user_schema import UserOutput, UsersListResponse, UsersMatchingListResponse
+from core.schemas.users_categories.users_categories_schema import CategoryOutput
 from core.services.categories.categories import CategoriesService
 from core.services.user_categories.user_categories import UserCategoriesAssociationService
 from core.services.user_interaction.user_interaction import UserInteractionService
@@ -40,9 +41,9 @@ router = APIRouter(prefix="/users-matching")
     tags=["Users", "Get user list", "List"],
     dependencies=[
         Depends(authenticator.authenticate),
-        # validate_query_params(
-        #     expected_params={"current_user_id", "limit", "next_token", "matching_type"}
-        # ),
+        validate_query_params(
+            expected_params={"current_user_id", "limit", "next_token", "matching_type"}
+        ),
     ],
 )
 async def get_matching_users_list(
@@ -62,7 +63,7 @@ async def get_matching_users_list(
     """
 
     # REMARK: так лучше не делать
-    # TODO: зарефакторить в следующих тикетах
+    # TODO: REFACTOR
 
     user_service = UserService(db_session=db)
     category_service = CategoriesService(db_session=db)
@@ -85,8 +86,15 @@ async def get_matching_users_list(
         next_token=next_token,
     )
 
-    # Конвертируем пользователей в Pydantic модели
-    matching_users_output = [UserOutput.from_orm(user) for user in matching_users]
+    # Конвертируем пользователей в Pydantic модели. Оно конвертирует таким образом, что позволяет одновременно
+    # иметь в выводе как UserOutput, так и CategoryOutput. Код не самый красивый, но я его позже подправлю
+    # Сначала этот код отрезает лишние атрибуты из модели UserOutput, которые не входят в pydantic-схему
+    # Потом туда добавляются CategoryOutput сущности категорий.
+    # TODO: refactor
+    matching_users_output = [
+        UserOutput(**{k: v for k, v in user.__dict__.items() if k in UserOutput.__fields__})
+        for user in matching_users
+    ]
 
     return UsersMatchingListResponse(
         matching_users=matching_users_output, total=total, next_token=next_token

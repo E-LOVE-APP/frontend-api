@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
 
+from core.schemas.users_categories.users_categories_schema import CategoryOutput
+
 """Pydantic schemas for Users."""
 
 
@@ -48,11 +50,12 @@ class UserOutput(UserBase):
 
     id: UUID = Field(..., description="ID of the user in UUID format")
     user_descr: Optional[str] = Field(None, max_length=500, description="Description of the user")
+    categories: Optional[List[CategoryOutput]] = None
 
     class Config:
         orm_mode = True
-        from_attributes = True
         extra = "forbid"
+        from_attributes = True
 
 
 class UsersListResponse(BaseModel):

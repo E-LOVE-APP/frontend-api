@@ -8,6 +8,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import Float, and_, func, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from sqlalchemy.sql import Select, Subquery
 from sqlalchemy.sql.elements import Label
 
@@ -39,7 +40,6 @@ class UsersMatchingService:
         db_session: AsyncSession,
         user_interaction_service: UserInteractionService,
         user_categories_service: UserCategoriesAssociationService,
-        # paginator: Paginator,
     ):
         """
         Инициализирует экземпляр UsersMatchingService.
@@ -55,7 +55,7 @@ class UsersMatchingService:
         self.user_categories_service = user_categories_service
         self.paginator = Paginator[User](db_session=db_session, model=User)
 
-    def build_potential_users_subquery(
+    async def build_potential_users_subquery(
         self,
         current_user_id: UUID,
         curr_user_category_ids: List[UUID],
@@ -101,7 +101,7 @@ class UsersMatchingService:
 
         return potential_users_subq
 
-    def calculate_overlap_percentage(
+    async def calculate_overlap_percentage(
         self, potential_users_subq: Subquery, num_curr_user_categories: int
     ) -> int:
         """
@@ -134,7 +134,7 @@ class UsersMatchingService:
 
         return overlap_percentage
 
-    def build_main_query(
+    async def build_main_query(
         self,
         potential_users_subq: Subquery,
         overlap_percentage: Label,
@@ -177,12 +177,14 @@ class UsersMatchingService:
         return base_query
 
     # TODO: перенести в utils
+    # TODO: add docstring
     async def get_total_count(self, main_query: Select) -> int:
         count_query = select(func.count()).select_from(main_query.subquery())
         total_result = await self.db_session.execute(count_query)
         total = total_result.scalar_one()
         return total
 
+    # TODO: добавить так же вывод постов юзера
     async def get_matching_users_list(
         self,
         current_user_id: UUID,
@@ -216,7 +218,7 @@ class UsersMatchingService:
             )
             curr_user_categories_ids = [category.id for category in curr_user_categories]
 
-            # TODO: переместить эту проверку в метод get_user_categories
+            # TODO: переместить if-проверки?
             if not curr_user_categories_ids:
                 return []
 
@@ -224,18 +226,21 @@ class UsersMatchingService:
                 current_user_id, paginate=False
             )
 
-            potential_users_subquery = self.build_potential_users_subquery(
+            # if not viewed_users_ids:
+            #     return []
+
+            potential_users_subquery = await self.build_potential_users_subquery(
                 current_user_id=current_user_id,
                 curr_user_category_ids=curr_user_categories_ids,
                 viewed_users_ids=viewed_users_ids,
             )
 
-            overlap_percentage_result = self.calculate_overlap_percentage(
+            overlap_percentage_result = await self.calculate_overlap_percentage(
                 potential_users_subq=potential_users_subquery,
                 num_curr_user_categories=len(curr_user_categories_ids),
             )
 
-            main_query = self.build_main_query(
+            main_query = await self.build_main_query(
                 potential_users_subq=potential_users_subquery,
                 overlap_percentage=overlap_percentage_result,
                 matching_type=matching_type,
