@@ -1,19 +1,16 @@
 """ User service module """
 
 import logging
-import uuid
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from sqlalchemy import asc, select
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from core.db.models.users.users import User
-from core.schemas.users.user_schema import UserUpdateSchema
+from core.schemas.users.user_schema import UserUpdate
 from core.services.base_service import BaseService
 from utils.custom_pagination import Paginator
 
@@ -40,6 +37,7 @@ class UserService(BaseService):
         if password:
             user.set_password(password)
 
+    # TODO: можно отрефакторить, если в user_data заместо any добавить доп. тип в виде словаря (модели юзера) для лучшей типизации
     async def create_user(self, user_data: Dict[str, Any]) -> User:
         return await self.create_object(
             model=User,
@@ -60,8 +58,6 @@ class UserService(BaseService):
         """
         Получает список пользователей с поддержкой пагинации.
 
-        :param page: Номер страницы (начиная с 1).
-        :param size: Не используется (зарезервировано для будущего использования).
         :param limit: Количество записей на странице.
         :param email: Фильтр по email.
         :return: Список объектов пользователей.
@@ -93,7 +89,7 @@ class UserService(BaseService):
                 detail="An unexpected database error occurred",
             )
 
-    async def update_user(self, user_id: UUID, update_data: UserUpdateSchema) -> User:
+    async def update_user(self, user_id: UUID, update_data: UserUpdate) -> User:
         return await self.update_object(
             model=User,
             object_id=user_id,
@@ -102,12 +98,6 @@ class UserService(BaseService):
         )
 
     async def delete_user(self, user_id: UUID) -> User:
-        """
-        Удаляет пользователя из базы данных.
-
-        :param user_id: Идентификатор пользователя.
-        :raises HTTPException: Если пользователь не найден или произошла ошибка базы данных.
-        """
         try:
             return await self.delete_object_by_id(User, user_id)
 

@@ -1,21 +1,15 @@
 # api/v1/endpoints/users/users.py
 
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPBearer
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.security import Authenticator, authenticator
+from auth.security import authenticator
 from configuration.database import get_db_session
 from core.schemas.errors.httperror import HTTPError
-from core.schemas.users.user_schema import (
-    UserCreate,
-    UserOutput,
-    UsersListResponse,
-    UserUpdateSchema,
-)
+from core.schemas.users.user_schema import UserCreate, UserOutput, UsersListResponse, UserUpdate
 from core.services.users.users import UserService
 from dependencies.validate_query_params import validate_query_params
 
@@ -23,11 +17,7 @@ router = APIRouter(
     prefix="/users",
 )
 
-# TODO: get rid of get_db_session in router-dependencies list
 
-
-# Пример корректного метода, с описанием для swagger; Тэги и responses можно будет отдельно создать в отдельных файлах, чтобы тут легко переиспользовать, чем я потом и займусь.
-# POST-эндпоинт для юзера не подлежит реализации, пока не будет настроен Auth0.
 @router.post(
     "/",
     response_model=UserOutput,
@@ -43,7 +33,6 @@ router = APIRouter(
     },
     tags=["Users", "Create user"],
     dependencies=[
-        Depends(get_db_session),
         Depends(authenticator.authenticate),
         Depends(authenticator.require_role("Admin")),
     ],
@@ -79,9 +68,7 @@ async def create_user(
     },
     tags=["Users", "Get user"],
     dependencies=[
-        Depends(get_db_session),
         Depends(authenticator.authenticate),
-        # Depends(authenticator.require_role("Admin")),
     ],
 )
 async def get_user_by_id(
@@ -114,7 +101,6 @@ async def get_user_by_id(
     dependencies=[
         Depends(authenticator.authenticate),
         validate_query_params(expected_params={"limit", "next_token", "email"}),
-        # Depends(authenticator.require_role("Admin")),
     ],
 )
 async def get_users_list(
@@ -126,7 +112,6 @@ async def get_users_list(
     """
     Get a list of users with pagination.
 
-    - **page**: Page number (starting from 1)
     - **limit**: Number of users per page
     - **email**: Filter users by email
     """
@@ -149,14 +134,12 @@ async def get_users_list(
     },
     tags=["Users", "Update user"],
     dependencies=[
-        Depends(get_db_session),
         Depends(authenticator.authenticate),
-        # Depends(authenticator.require_role("Admin")),
     ],
 )
 async def update_user(
     user_id: UUID,
-    user_update: UserUpdateSchema,
+    user_update: UserUpdate,
     db: AsyncSession = Depends(get_db_session),
 ):
     """
@@ -185,9 +168,7 @@ async def update_user(
     },
     tags=["Users", "Delete user"],
     dependencies=[
-        Depends(get_db_session),
         Depends(authenticator.authenticate),
-        # Depends(authenticator.require_role("Admin")),
     ],
 )
 async def delete_user(

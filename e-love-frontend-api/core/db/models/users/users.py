@@ -14,6 +14,7 @@ from core.db.models.intermediate_models.user_roles import user_roles_table
 from core.db.models.posts.user_post import UserPost
 from core.db.models.users.user_gender import UserGender
 from core.db.models.users.user_images import UserImages
+from core.db.models.users.user_interaction import UserInteraction
 from core.db.models.users.user_role import UserRole
 from core.db.models.users.user_status import UserStatus
 
@@ -53,19 +54,31 @@ class User(BaseModel):
     # TODO: change the name to 'images'; Probably should also do it like M to M relationship
     image: Mapped["UserImages"] = relationship("UserImages", back_populates="user")
 
-    posts: Mapped["UserPost"] = relationship("UserPost", back_populates="user")
+    posts: Mapped["UserPost"] = relationship("UserPost", back_populates="user", lazy="selectin")
 
     logs: Mapped["AuditLogs"] = relationship("AuditLogs", back_populates="user")
 
     # Many To Many relationships
     genders: Mapped[List["UserGender"]] = relationship(
-        "UserGender", secondary=user_genders_table, back_populates="users"
+        "UserGender", secondary=user_genders_table, back_populates="users", lazy="selectin"
     )
+
     roles: Mapped[List["UserRole"]] = relationship(
-        "UserRole", secondary=user_roles_table, back_populates="users"
+        "UserRole", secondary=user_roles_table, back_populates="users", lazy="selectin"
     )
+
     categories: Mapped[List["Categories"]] = relationship(
-        "Categories", secondary=user_categories_table, back_populates="users"
+        "Categories", secondary=user_categories_table, back_populates="users", lazy="selectin"
+    )
+
+    interactions_sent: Mapped[List["UserInteraction"]] = relationship(
+        "UserInteraction", foreign_keys="[UserInteraction.user_id]", back_populates="user"
+    )
+
+    interactions_received: Mapped[List["UserInteraction"]] = relationship(
+        "UserInteraction",
+        foreign_keys="[UserInteraction.target_user_id]",
+        back_populates="target_user",
     )
 
     def set_password(self, password: str) -> None:

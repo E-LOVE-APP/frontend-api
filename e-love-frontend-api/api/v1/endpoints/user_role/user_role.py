@@ -1,12 +1,12 @@
 # api/v1/endpoints/user_role/user_role.py
 
-from typing import List, Optional
+from typing import List
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.security import Authenticator, authenticator
+from auth.security import authenticator
 from configuration.database import get_db_session
 from core.schemas.errors.httperror import HTTPError
 from core.schemas.user_role.user_role_schema import UserRoleCreate, UserRoleOutput, UserRoleUpdate
@@ -84,6 +84,8 @@ async def get_role_by_id(
     return await user_role_service.get_role_by_id(role_id)
 
 
+# We're using List-type here in the response-models because we don't use pagination
+# inside of this method. (There is only around 5 roles in total, so it is no needed)
 @router.get(
     "/",
     response_model=List[UserRoleOutput],
