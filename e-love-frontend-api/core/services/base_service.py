@@ -92,7 +92,7 @@ class BaseService:
         except SQLAlchemyError as e:
             await self.db_session.rollback()
             raise HTTPException(
-                status_code=500, detail="An error occurred while creating the object."
+                status_code=500, detail=f"An error occurred while creating the object. , {e}"
             )
 
     async def update_object(

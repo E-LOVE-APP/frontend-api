@@ -2,14 +2,13 @@ import logging
 from typing import Any, Dict, List
 from uuid import UUID
 
+from core.db.models.posts.user_post import UserPost
+from core.schemas.posts.user_post_schema import PostCreate
+from core.services.base_service import BaseService
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from core.db.models.posts.user_post import UserPost
-from core.schemas.posts.user_post_schema import PostCreate
-from core.services.base_service import BaseService
 from utils.custom_pagination import Paginator
 
 logger = logging.getLogger(__name__)
@@ -29,12 +28,10 @@ class UserPostService(BaseService):
 
         super().__init__(db_session)
 
-    async def create_post(self, post_data: UserPost) -> UserPost:
-        # Чтобы создать объект необходимо преоброзовать модель в словарь
-        post_data_dict = post_data.dict()
+    async def create_post(self, post_data: Dict[str, Any]) -> UserPost:
         return await self.create_object(
             model=UserPost,
-            data=post_data_dict,
+            data=post_data,
         )
 
     async def get_post_by_id(self, post_id: UUID) -> UserPost:
