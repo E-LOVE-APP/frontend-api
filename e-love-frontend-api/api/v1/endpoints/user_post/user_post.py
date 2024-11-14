@@ -1,13 +1,13 @@
 from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth.security import Authenticator, authenticator
 from configuration.database import get_db_session
 from core.schemas.errors.httperror import HTTPError
-from core.schemas.posts.user_post_schema import PostCreate, PostOutput, PostUpdate
+from core.schemas.posts.user_post_schema import PostCreate, PostOutput, PostUpdate, PostsListResponse
 from core.services.user_post.user_post import UserPostService
 
 router = APIRouter(
@@ -32,7 +32,6 @@ router = APIRouter(
     dependencies=[
         Depends(get_db_session),
         Depends(authenticator.authenticate),
-        # Depends(authenticator.require_role("Admin")),
     ],
 )
 async def create_post(
@@ -84,11 +83,11 @@ async def get_post_by_id(
 
 @router.get(
     "/",
-    response_model=List[PostOutput],
+    response_model=PostsListResponse,
     responses={
         200: {
             "description": "Get user posts list.",
-            "model": List[PostOutput],
+            "model": PostsListResponse,
         },
         500: {
             "description": "Server error.",
@@ -96,21 +95,22 @@ async def get_post_by_id(
         },
     },
     tags=["User posts", "Get user posts list", "List"],
-    dependencies=[
-        Depends(get_db_session),
-        Depends(authenticator.authenticate),
-        # Depends(authenticator.require_role("Admin")),
-    ],
 )
 async def get_post_list(
+    limit: int = Query(10, ge=1),
+    next_token: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """
-    Get a list of user posts (without pagination, it's not needed here).
-
-    """
     user_post_service = UserPostService(db)
-    return await user_post_service.get_post_list()
+    response = await user_post_service.get_post_list(
+        limit=limit,
+        next_token=next_token,
+    )
+    return {
+    "items": response["posts"],
+    "has_next": response["has_next"],
+    "next_token": response["next_token"],
+}
 
 
 @router.put(

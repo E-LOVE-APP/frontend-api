@@ -1,5 +1,6 @@
 from typing import List, Optional
 from uuid import UUID
+from datetime import datetime
 
 from pydantic import BaseModel, Field
 
@@ -28,10 +29,22 @@ class PostUpdate(PostBase):
     post_descr: str = Field(..., max_length=1000, min_length=1, description="Descr of the post")
 
 
-class PostOutput(PostBase):
-    post_title: str = Field(..., max_length=250, min_length=1, description="Name of the post")
-    post_descr: str = Field(..., max_length=1000, min_length=1, description="Descr of the post")
+class PostOutput(BaseModel):
+    id: UUID
+    post_title: str
+    post_descr: str
+    user_id: UUID
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
 
 
 class PostsListResponse(BaseModel):
-    posts: List[PostOutput]
+    items: List[PostOutput]
+    has_next: bool
+    next_token: Optional[str] = None
+
+    class Config:
+        orm_mode = True

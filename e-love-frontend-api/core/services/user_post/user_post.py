@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -28,7 +28,9 @@ class UserPostService(BaseService):
         """
 
         super().__init__(db_session)
-
+        self.paginator = Paginator[UserPost](db_session=db_session, model=UserPost)
+        
+        
     async def create_post(self, post_data: Dict[str, Any]) -> UserPost:
         return await self.create_object(
             model=UserPost,
@@ -38,12 +40,23 @@ class UserPostService(BaseService):
     async def get_post_by_id(self, post_id: UUID) -> UserPost:
         return await self.get_object_by_id(UserPost, post_id)
 
-    async def get_post_list(self) -> List[UserPost]:
+    async def get_post_list(
+        self,
+        limit: int = 3,
+        next_token: Optional[str] = None,
+    ) -> List[UserPost]:
         try:
-            query = select(UserPost)
-            result = await self.db_session.execute(query)
-            posts = result.scalars().all()
-            return posts
+            base_query = select(UserPost)
+            
+            response = await self.paginator.paginate_query(
+                base_query=base_query,
+                next_token=next_token,
+                filters=None,
+                model_name="posts",
+                limit=limit,
+        )
+            
+            return response
         except SQLAlchemyError as e:
             await self.db_session.rollback()
             logger.error(f"Unexpected error while getting posts list: {e}")
