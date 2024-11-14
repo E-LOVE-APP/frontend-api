@@ -14,6 +14,7 @@ from sqlalchemy.exc import (
 
 from utils.enums.common_exceptions import CommonExceptions
 
+# Хранение в виде - ErrorType: (status_code, message) == Dict[Type[Exception], Tuple[int, str]]
 ExceptionMap: Dict[Type[Exception], Tuple[int, str]] = {
     IntegrityError: (status.HTTP_400_BAD_REQUEST, CommonExceptions.INTEGRITY_ERROR),
     NoResultFound: (status.HTTP_404_NOT_FOUND, CommonExceptions.RESOURCE_NOT_FOUND),
