@@ -1,6 +1,9 @@
 from typing import List, Optional
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from auth.security import Authenticator, authenticator
 from configuration.database import get_db_session
 from core.schemas.errors.httperror import HTTPError
@@ -11,8 +14,6 @@ from core.schemas.posts.user_post_schema import (
     PostUpdate,
 )
 from core.services.user_post.user_post import UserPostService
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(
     prefix="/user-post",
