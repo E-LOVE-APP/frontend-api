@@ -3,6 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+
 class CategoryBase(BaseModel):
     id: Optional[UUID] = Field(None, description="An id of the category in UUID format")
     category_name: Optional[str] = Field(

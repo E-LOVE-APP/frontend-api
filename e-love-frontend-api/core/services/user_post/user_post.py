@@ -2,14 +2,13 @@ import logging
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
+from core.db.models.posts.user_post import UserPost
+from core.schemas.posts.user_post_schema import PostCreate
+from core.services.base_service import BaseService
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from core.db.models.posts.user_post import UserPost
-from core.schemas.posts.user_post_schema import PostCreate
-from core.services.base_service import BaseService
 from utils.custom_pagination import Paginator
 
 logger = logging.getLogger(__name__)
@@ -29,8 +28,7 @@ class UserPostService(BaseService):
 
         super().__init__(db_session)
         self.paginator = Paginator[UserPost](db_session=db_session, model=UserPost)
-        
-        
+
     async def create_post(self, post_data: Dict[str, Any]) -> UserPost:
         return await self.create_object(
             model=UserPost,
@@ -47,15 +45,15 @@ class UserPostService(BaseService):
     ) -> List[UserPost]:
         try:
             base_query = select(UserPost)
-            
+
             response = await self.paginator.paginate_query(
                 base_query=base_query,
                 next_token=next_token,
                 filters=None,
                 model_name="posts",
                 limit=limit,
-        )
-            
+            )
+
             return response
         except SQLAlchemyError as e:
             await self.db_session.rollback()

@@ -4,13 +4,12 @@ import logging
 from typing import Any, Dict, List
 from uuid import UUID
 
+from core.db.models.users.user_gender import UserGender
+from core.services.base_service import BaseService
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from core.db.models.users.user_gender import UserGender
-from core.services.base_service import BaseService
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -82,14 +81,14 @@ class UserGenderService(BaseService):
             logger.error(f"Integrity error while updating gender {gender_id}: {e}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot update gender due to related records in other tables."
+                detail="Cannot update gender due to related records in other tables.",
             )
         except SQLAlchemyError as e:
             await self.db_session.rollback()
             logger.error(f"Unexpected error while updating gender {gender_id}: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"An unexpected database error occurred."
+                detail=f"An unexpected database error occurred.",
             )
 
     async def delete_gender(self, gender_id: UUID) -> None:

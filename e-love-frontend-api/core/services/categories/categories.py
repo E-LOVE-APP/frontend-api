@@ -2,13 +2,12 @@ import logging
 from typing import Any, Dict, List
 from uuid import UUID
 
+from core.db.models.categories.categories import Categories
+from core.services.base_service import BaseService
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from core.db.models.categories.categories import Categories
-from core.services.base_service import BaseService
 from utils.custom_pagination import Paginator
 
 logger = logging.getLogger(__name__)
@@ -55,14 +54,14 @@ class CategoriesService(BaseService):
             logger.error(f"Integrity error while updating category {category_id}: {e}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot update category due to related records in other tables."
+                detail="Cannot update category due to related records in other tables.",
             )
         except SQLAlchemyError as e:
             await self.db_session.rollback()
             logger.error(f"Unexpected error while updating category {category_id}: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"An unexpected database error occurred."
+                detail=f"An unexpected database error occurred.",
             )
 
     async def delete_category(self, category_id: UUID) -> None:
