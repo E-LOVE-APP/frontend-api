@@ -1,6 +1,10 @@
 from typing import List
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from auth.security import authenticator
 from configuration.database import get_db_session
 from core.schemas.categories.categories_schema import CategoryOutput
@@ -14,13 +18,8 @@ from core.schemas.user_categories_association.user_categories_association_schema
 )
 from core.schemas.users.user_schema import UserOutput
 from core.services.categories.categories import CategoriesService
-from core.services.user_categories.user_categories import (
-    UserCategoriesAssociationService,
-)
+from core.services.user_categories.user_categories import UserCategoriesAssociationService
 from core.services.users.users import UserService
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(
     prefix="/user-categories",

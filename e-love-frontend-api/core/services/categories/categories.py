@@ -2,12 +2,13 @@ import logging
 from typing import Any, Dict, List
 from uuid import UUID
 
-from core.db.models.categories.categories import Categories
-from core.services.base_service import BaseService
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from core.db.models.categories.categories import Categories
+from core.services.base_service import BaseService
 from utils.custom_pagination import Paginator
 
 logger = logging.getLogger(__name__)
