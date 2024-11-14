@@ -40,7 +40,7 @@ router = APIRouter(
     ],
 )
 async def create_gender(
-    user_gender_data: UserGenderCreate,
+    gender_data: UserGenderCreate,
     db: AsyncSession = Depends(get_db_session),
 ):
     """
@@ -50,7 +50,8 @@ async def create_gender(
 
     """
     user_gender_service = UserGenderService(db)
-    return await user_gender_service.create_gender(user_gender_data)
+    data_dict = gender_data.dict(exclude_unset=True)
+    return await user_gender_service.create_gender(data_dict)
 
 
 @router.get(

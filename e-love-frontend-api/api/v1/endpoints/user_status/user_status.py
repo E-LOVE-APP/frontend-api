@@ -50,7 +50,8 @@ async def create_status(
 
     """
     user_status_service = UserStatusService(db)
-    return await user_status_service.create_status(user_status_data)
+    data_dict = user_status_data.dict(exclude_unset=True)
+    return await user_status_service.create_status(data_dict)
 
 
 @router.get(

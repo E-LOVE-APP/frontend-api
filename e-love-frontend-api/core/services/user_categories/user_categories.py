@@ -27,7 +27,7 @@ class UserCategoriesAssociationService:
         user_service: UserService,
         category_service: CategoriesService,
     ):
-        self.db_session = db_session
+        super().__init__(db_session)
         self.user_service = user_service
         self.category_service = category_service
 

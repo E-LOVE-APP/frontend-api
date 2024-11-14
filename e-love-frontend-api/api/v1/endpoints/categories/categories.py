@@ -36,7 +36,6 @@ router = APIRouter(
     dependencies=[
         Depends(get_db_session),
         Depends(authenticator.authenticate),
-        # Depends(authenticator.require_role("Admin")),
     ],
 )
 async def create_category(
@@ -50,7 +49,8 @@ async def create_category(
 
     """
     categories_service = CategoriesService(db)
-    return await categories_service.create_category(category_data)
+    data_dict = category_data.dict(exclude_unset=True)
+    return await categories_service.create_category(data_dict)
 
 
 @router.get(
@@ -149,7 +149,8 @@ async def update_category(
     - **category_update**: Fields to update
     """
     categories_service = CategoriesService(db)
-    return await categories_service.update_category(category_id, category_update)
+    update_data = category_update.dict(exclude_unset=True)
+    return await categories_service.update_category(category_id, update_data)
 
 
 @router.delete(

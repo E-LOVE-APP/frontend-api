@@ -20,14 +20,11 @@ class CategoriesService(BaseService):
 
     def __init__(self, db_session: AsyncSession):
         super().__init__(db_session)
-        self.db_session = db_session
         self.paginator = Paginator[Categories](db_session=db_session, model=Categories)
 
-    async def create_category(self, category_data: Categories) -> Categories:
-        # Чтобы создать объект необходимо преоброзовать модель в словарь
-        category_data_dict = category_data.dict()
+    async def create_category(self, category_data: Dict[str, Any]) -> Categories:
         return await self.create_object(
-            model=Categories, data=category_data_dict, unique_fields=["category_name"]
+            model=Categories, data=category_data, unique_fields=["category_name"]
         )
 
     async def get_category_by_id(self, category_id: UUID) -> Categories:
@@ -47,11 +44,26 @@ class CategoriesService(BaseService):
                 detail="An unexpected database error occurred",
             )
 
-    async def update_category(self, category_id: UUID, update_data: Categories) -> Categories:
-        # Чтобы обновить объект необходимо преоброзовать модель в словарь
-        return await self.update_object(
-            model=Categories, object_id=category_id, data=update_data.dict(exclude_unset=True)
-        )
+    async def update_category(self, category_id: UUID, update_data: Dict[str, Any]) -> Categories:
+        try:
+            updated_category = await self.update_object(
+                model=Categories, object_id=category_id, data=update_data
+            )
+            return updated_category
+        except IntegrityError as e:
+            await self.db_session.rollback()
+            logger.error(f"Integrity error while updating category {category_id}: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot update category due to related records in other tables."
+            )
+        except SQLAlchemyError as e:
+            await self.db_session.rollback()
+            logger.error(f"Unexpected error while updating category {category_id}: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"An unexpected database error occurred."
+            )
 
     async def delete_category(self, category_id: UUID) -> None:
         await self.delete_object_by_id(Categories, category_id)

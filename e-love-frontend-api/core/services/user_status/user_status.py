@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db.models.users.user_status import UserStatus
@@ -26,7 +26,6 @@ class UserStatusService(BaseService):
         :param db_session: Асинхронная сессия базы данных.
         """
         super().__init__(db_session)
-        self.db_session = db_session
 
     async def create_status(self, status_data: Dict[str, Any]) -> UserStatus:
         """
@@ -36,7 +35,7 @@ class UserStatusService(BaseService):
         :return: Созданный объект статуса пользователя.
         """
         return await self.create_object(
-            model=UserStatus, data=status_data.dict(), unique_fields=["status_name"]
+            model=UserStatus, data=status_data, unique_fields=["status_name"]
         )
 
     async def get_status_by_id(self, status_id: UUID) -> UserStatus:
@@ -62,7 +61,7 @@ class UserStatusService(BaseService):
                 detail="An unexpected database error occurred",
             )
 
-    async def update_status(self, status_id: UUID, update_data: UserStatus) -> UserStatus:
+    async def update_status(self, status_id: UUID, update_data: Dict[str, Any]) -> UserStatus:
         """
         Обновляет информацию статусе пользователя.
 
@@ -70,9 +69,25 @@ class UserStatusService(BaseService):
         :param update_data: Словарь с обновленными данными статуса.
         :return: Обновленный объект статуса пользователя.
         """
-        return await self.update_object(
-            model=UserStatus, object_id=status_id, data=update_data.dict(exclude_unset=True)
-        )
+        try:
+            updated_status = await self.update_object(
+                model=UserStatus, object_id=status_id, data=update_data
+            )
+            return updated_status
+        except IntegrityError as e:
+            await self.db_session.rollback()
+            logger.error(f"Integrity error while updating status {status_id}: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot update status due to related records in other tables."
+            )
+        except SQLAlchemyError as e:
+            await self.db_session.rollback()
+            logger.error(f"Unexpected error while updating status {status_id}: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"An unexpected database error occurred."
+            )
 
     async def delete_status(self, status_id: UUID) -> None:
         """
