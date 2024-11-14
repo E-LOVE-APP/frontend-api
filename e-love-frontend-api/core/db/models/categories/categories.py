@@ -1,7 +1,8 @@
-from core.db.models.intermediate_models.posts_categories import posts_categories_table
-from core.db.models.intermediate_models.user_categories import user_categories_table
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
+
+from core.db.models.intermediate_models.posts_categories import posts_categories_table
+from core.db.models.intermediate_models.user_categories import user_categories_table
 
 from ..base import BaseModel
 

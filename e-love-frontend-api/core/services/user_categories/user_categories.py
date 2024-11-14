@@ -2,17 +2,16 @@ import logging
 from typing import List
 from uuid import UUID
 
-from fastapi import HTTPException, status
-from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
-
 from core.db.models.categories.categories import Categories
 from core.db.models.intermediate_models.user_categories import user_categories_table
 from core.db.models.users.users import User
 from core.services.categories.categories import CategoriesService
 from core.services.users.users import UserService
+from fastapi import HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -50,6 +49,8 @@ class UserCategoriesAssociationService:
                 )
             user.categories.append(category)
             await self.db_session.commit()
+            await self.db_session.refresh(user)  # Обновляем объект пользователя
+            return user  # Возвращаем пользователя
         except SQLAlchemyError as e:
             await self.db_session.rollback()
             logger.error(f"An error occurred while adding category to the user: {e}")

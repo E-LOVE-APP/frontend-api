@@ -1,10 +1,6 @@
 from typing import List
 from uuid import UUID
 
-from passlib.hash import bcrypt
-from sqlalchemy import Column, ForeignKey, String
-from sqlalchemy.orm import Mapped, relationship
-
 from core.db.models.audit_logs.audit_logs import AuditLogs
 from core.db.models.categories.categories import Categories
 from core.db.models.intermediate_models.posts_categories import posts_categories_table
@@ -17,6 +13,9 @@ from core.db.models.users.user_images import UserImages
 from core.db.models.users.user_interaction import UserInteraction
 from core.db.models.users.user_role import UserRole
 from core.db.models.users.user_status import UserStatus
+from passlib.hash import bcrypt
+from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy.orm import Mapped, relationship
 
 from ..base import BaseModel
 
@@ -52,6 +51,7 @@ class User(BaseModel):
     status: Mapped["UserStatus"] = relationship("UserStatus", back_populates="users")
 
     # TODO: change the name to 'images'; Probably should also do it like M to M relationship
+
     image: Mapped["UserImages"] = relationship("UserImages", back_populates="user")
 
     posts: Mapped["UserPost"] = relationship("UserPost", back_populates="user", lazy="selectin")

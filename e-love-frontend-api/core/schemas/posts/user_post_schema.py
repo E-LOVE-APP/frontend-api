@@ -20,6 +20,7 @@ class PostBase(BaseModel):
 class PostCreate(PostBase):
     post_title: str = Field(..., max_length=250, min_length=1, description="Name of the post")
     post_descr: str = Field(..., max_length=1000, min_length=1, description="Descr of the post")
+    user_id: UUID = Field(..., description="ID of the user")
 
 
 class PostUpdate(PostBase):
