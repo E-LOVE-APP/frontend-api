@@ -17,6 +17,7 @@ from core.db.models.intermediate_models.user_categories import user_categories_t
 from core.db.models.users.users import User
 from core.services.user_categories.user_categories import UserCategoriesAssociationService
 from core.services.user_interaction.user_interaction import UserInteractionService
+from exceptions.exception_handler import ExceptionHandler
 from utils.custom_pagination import Paginator
 from utils.enums.matching_type import MATCHING_PERCENTAGE_RANGES, MatchingType
 
@@ -262,10 +263,7 @@ class UsersMatchingService:
 
             return matching_users, total, next_token
 
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            logger.error(f"Error while fetching matching users: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An error occurred while fetching matching users.",
-            )
+            logger.error(f"Error getting users matching list: {e}")
+            ExceptionHandler(e)

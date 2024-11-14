@@ -13,3 +13,6 @@ class CommonExceptions(Enum):
     AUTHENTICATION_FAILED = "Authentication failed."
     AUTHORIZATION_FAILED = "Authorization failed."
     UNEXPECTED_ERROR = "An unexpected error occurred."
+    RESPONSE_VALIDATION_ERROR = (
+        "Input should be a valid dictionary or object to extract fields from."
+    )

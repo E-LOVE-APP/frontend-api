@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.db.models.users.users import User
 from core.schemas.users.user_schema import UserUpdate
 from core.services.base_service import BaseService
+from exceptions.exception_handler import ExceptionHandler
 from utils.custom_pagination import Paginator
 
 logger = logging.getLogger(__name__)
@@ -105,7 +106,4 @@ class UserService(BaseService):
         except IntegrityError as e:
             await self.db_session.rollback()
             logger.error(f"IntegrityError while deleting the user: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Cannot delete the user because it is referenced by other records.",
-            )
+            ExceptionHandler(e)
