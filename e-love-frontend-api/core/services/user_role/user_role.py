@@ -4,13 +4,12 @@ import logging
 from typing import Any, Dict, List
 from uuid import UUID
 
-from fastapi import HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db.models.users.user_role import UserRole
 from core.services.base_service import BaseService
+from exceptions.exception_handler import ExceptionHandler
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -47,7 +46,7 @@ class UserRoleService(BaseService):
 
     async def get_user_roles_list(self) -> List[UserRole]:
         """
-        Получает список всех ролей пользователей. На данный момент реализация пагинации тут будет излишней, поскольку самих ролей, которые существуют в соответствующей таблице БД < 10.
+        Получает список всех ролей пользователей.
 
         :return: Список объектов ролей пользователей.
         :raises HTTPException: Если произошла ошибка базы данных.
@@ -57,13 +56,10 @@ class UserRoleService(BaseService):
             result = await self.db_session.execute(query)
             roles = result.scalars().all()
             return roles
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            logger.error(f"Unexpected error while getting user roles list: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected database error occurred",
-            )
+            logger.error(f"Error getting user roles list: {e}")
+            ExceptionHandler(e)
 
     async def update_user_role(self, role_id: UUID, update_data: Dict[str, Any]) -> UserRole:
         """

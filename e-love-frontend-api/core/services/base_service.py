@@ -6,7 +6,6 @@ from uuid import UUID
 from fastapi import HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from exceptions.exception_handler import ExceptionHandler
@@ -136,7 +135,7 @@ class BaseService:
             await self.db_session.commit()
             await self.db_session.refresh(obj)
             return obj
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
             logger.error(f"Error in update_object method: {e}")
             ExceptionHandler(e)
@@ -155,7 +154,7 @@ class BaseService:
             await self.db_session.delete(obj_to_delete)
             await self.db_session.commit()
 
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
             logger.error(f"Error in delete_object method: {e}")
             ExceptionHandler(e)

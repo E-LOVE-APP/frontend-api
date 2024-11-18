@@ -3,14 +3,12 @@ import uuid
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from fastapi import HTTPException, status
-from sqlalchemy import asc, select
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from core.db.models.categories.categories import Categories
 from core.services.base_service import BaseService
+from exceptions.exception_handler import ExceptionHandler
 from utils.custom_pagination import Paginator
 
 logger = logging.getLogger(__name__)
@@ -45,13 +43,10 @@ class CategoriesService(BaseService):
             result = await self.db_session.execute(query)
             categories = result.scalars().all()
             return categories
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            logger.error(f"Unexpected error while getting categories list: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected database error occurred",
-            )
+            logger.error(f"Error getting categories list: {e}")
+            ExceptionHandler(e)
 
     async def update_category(self, category_id: UUID, update_data: Dict[str, Any]) -> Categories:
         return await self.update_object(model=Categories, object_id=category_id, data=update_data)

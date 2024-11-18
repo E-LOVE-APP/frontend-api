@@ -4,13 +4,12 @@ import logging
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from fastapi import HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db.models.users.user_interaction import UserInteraction
 from core.services.base_service import BaseService
+from exceptions.exception_handler import ExceptionHandler
 from utils.custom_pagination import Paginator
 
 logger = logging.getLogger(__name__)
@@ -68,13 +67,10 @@ class UserInteractionService(BaseService):
 
             return response
 
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            logger.error(f"Unexpected error while fetching user interactions list: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected database error occurred",
-            )
+            logger.error(f"Error getting user interactions list: {e}")
+            ExceptionHandler(e)
 
     # WHY IDS:
     # Решено обойтись возвратом только списка id-шников просмотренных юзеров вместо полноценных объектов, для того чтобы
@@ -115,13 +111,10 @@ class UserInteractionService(BaseService):
 
             return viewed_users_ids
 
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            logger.error(f"Ошибка при получении списка просмотренных пользователей: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Произошла ошибка при получении списка просмотренных пользователей.",
-            )
+            logger.error(f"Error getting VIEWED user interactions list: {e}")
+            ExceptionHandler(e)
 
     # TODO: refactor - add the interaction type instead "Any"
     async def create_user_interaction(self, interaction_data: Dict[str, Any]) -> UserInteraction:
@@ -139,10 +132,7 @@ class UserInteractionService(BaseService):
             return await self.delete_object_by_id(UserInteraction, interaction_id)
 
         # foreign key reference against another tables
-        except IntegrityError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            logger.error(f"IntegrityError while deleting the user interaction: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Cannot delete the user interaction because it is referenced by other records.",
-            )
+            logger.error(f"Error deleting user interaction: {e}")
+            ExceptionHandler(e)
