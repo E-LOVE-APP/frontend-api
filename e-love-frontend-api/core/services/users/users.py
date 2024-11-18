@@ -4,14 +4,13 @@ import logging
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from fastapi import HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db.models.users.users import User
 from core.schemas.users.user_schema import UserUpdate
 from core.services.base_service import BaseService
+from exceptions.exception_handler import ExceptionHandler
 from utils.custom_pagination import Paginator
 
 logger = logging.getLogger(__name__)
@@ -81,13 +80,10 @@ class UserService(BaseService):
 
             return response
 
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            logger.error(f"Unexpected error while fetching users: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected database error occurred",
-            )
+            logger.error(f"Error while fetching users: {e}")
+            ExceptionHandler(e)
 
     async def update_user(self, user_id: UUID, update_data: UserUpdate) -> User:
         return await self.update_object(
@@ -98,14 +94,10 @@ class UserService(BaseService):
         )
 
     async def delete_user(self, user_id: UUID) -> User:
-        try:
-            return await self.delete_object_by_id(User, user_id)
+        return await self.delete_object_by_id(User, user_id)
 
         # Если в других таблицах уже имеются записи про юзеров, мы не сможем удалить этого юзера, пока оттуда не будут удалены так же все его записи. Это Integrity error. Однако, я считаю достаточно целесообразно сделать возможным каскадно удалить все записи, связанные с юзером, при удалении самого юзера - потому-что если он сам хочет удалить аккаунт, или его банят, зачем после этого в БД тогда хранить его информацию? Возможно это не лучшая идея, это мы обсудить 12.10 на roadmap. TODO:
-        except IntegrityError as e:
-            await self.db_session.rollback()
-            logger.error(f"IntegrityError while deleting the user: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Cannot delete the user because it is referenced by other records.",
-            )
+        # except Exception as e:
+        #     await self.db_session.rollback()
+        #     logger.error(f"Error while deleting user: {e}")
+        #     ExceptionHandler(e)

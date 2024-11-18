@@ -3,12 +3,12 @@ from typing import List
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db.models.users.users import User
 from core.services.user_gender.user_gender import UserGenderService
 from core.services.users.users import UserService
+from exceptions.exception_handler import ExceptionHandler
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -45,13 +45,10 @@ class UserGenderAssociationService:
 
             user.genders.append(gender)
             await self.db_session.commit()
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            logger.error(f"An error occurred while adding gender to the user: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Database session error while adding gender to the user.",
-            )
+            logger.error(f"Error adding gender to the user: {e}")
+            ExceptionHandler(e)
 
     async def add_genders_to_user(self, user_id: UUID, gender_ids: List[UUID]) -> None:
         """
@@ -78,13 +75,10 @@ class UserGenderAssociationService:
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="This user already has these genders",
                 )
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            logger.error(f"An error occurred while adding genders to the user: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Database session error while adding genders to the user.",
-            )
+            logger.error(f"Error adding genderS to the user: {e}")
+            ExceptionHandler(e)
 
     async def update_user_genders(self, user_id: UUID, new_gender_ids: List[UUID]) -> None:
         """
@@ -106,13 +100,10 @@ class UserGenderAssociationService:
             user.genders = genders
             await self.db_session.commit()
 
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            logger.error(f"An error occurred while updating user genders: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Database session error while updating user genders.",
-            )
+            logger.error(f"Error updating user genders: {e}")
+            ExceptionHandler(e)
 
     async def remove_gender_from_user(self, user_id: UUID, gender_id: UUID) -> None:
         """
@@ -133,13 +124,10 @@ class UserGenderAssociationService:
                 )
             user.genders.remove(gender)
             await self.db_session.commit()
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            logger.error(f"An error occurred while removing gender from the user: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Database session error while removing gender from the user.",
-            )
+            logger.error(f"Error removing gender from the user: {e}")
+            ExceptionHandler(e)
 
     async def remove_genders_from_user(self, user_id: UUID, gender_ids: List[UUID]) -> None:
         """
@@ -167,13 +155,10 @@ class UserGenderAssociationService:
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="None of the specified genders are assigned to the user.",
                 )
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            logger.error(f"An error occurred while removing genders from the user: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Database session error while removing genders from the user.",
-            )
+            logger.error(f"Error removing genders from the user: {e}")
+            ExceptionHandler(e)
 
     async def get_users_with_gender(self, gender_id: UUID) -> List[User]:
         """
@@ -186,12 +171,10 @@ class UserGenderAssociationService:
         try:
             gender = await self.gender_service.get_gender_by_id(gender_id)
             return gender.users
-        except SQLAlchemyError as e:
-            logger.error(f"An error occurred while fetching users with gender: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Database session error while fetching users with gender.",
-            )
+        except Exception as e:
+            await self.db_session.rollback()
+            logger.error(f"Error getting users with gender: {e}")
+            ExceptionHandler(e)
 
     async def get_user_genders(self, user_id: UUID) -> List[UserGender]:
         """
@@ -204,9 +187,7 @@ class UserGenderAssociationService:
         try:
             user = await self.user_service.get_user_by_id(user_id)
             return user.genders
-        except SQLAlchemyError as e:
-            logger.error(f"An error occurred while fetching genders of user: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Database session error while fetching genders of user.",
-            )
+        except Exception as e:
+            await self.db_session.rollback()
+            logger.error(f"Error getting user genders: {e}")
+            ExceptionHandler(e)

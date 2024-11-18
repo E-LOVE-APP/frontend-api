@@ -7,6 +7,7 @@ from core.db.models.intermediate_models.user_categories import user_categories_t
 from ..base import BaseModel
 
 
+# TODO: add CASCADE-constraint to this model!
 class Categories(BaseModel):
     """
     Модель категорий различных интересов.
