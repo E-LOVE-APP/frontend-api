@@ -178,24 +178,6 @@ class UsersMatchingService:
 
         return base_query
 
-    # TODO: перенести в utils
-    # TODO: add docstring
-
-    # async def get_total_count(self, main_query: Select) -> int:
-    #     """
-    #     Подсчитывает количество возвращаемых сущностей, которые беруться из запроса, который сюда подается на вход.
-
-    #     Параметры:
-    #         - main_query: Запрос, из которого возвращаются сущности.
-
-    #     Возвращает:
-    #         - int: Количество вернувшихся сущностей.
-    #     """
-    #     count_query = select(func.count()).select_from(main_query.subquery())
-    #     total_result = await self.db_session.execute(count_query)
-    #     total = total_result.scalar_one()
-    #     return total
-
     # TODO: добавить так же вывод постов юзера
     async def get_matching_users_list(
         self,
