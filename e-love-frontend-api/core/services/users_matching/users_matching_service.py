@@ -249,7 +249,7 @@ class UsersMatchingService:
 
             # Используем три строчки внизу для того чтобы вернуть Tuple в виде:
             # {matching_users: List[Users], total: len(matching_users), next_token: str}
-
+            # TODO: этот функционал можно вынести в отдельную функцию, возможно даже в самом пагинаторе
             matching_users = paginated_response["matching_users"]
             total = await get_total_count(db_session=self.db_session, main_query=main_query)
             next_token = paginated_response["next_token"]
