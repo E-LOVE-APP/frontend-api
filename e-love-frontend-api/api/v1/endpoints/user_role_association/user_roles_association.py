@@ -269,7 +269,6 @@ async def remove_roles_from_user(
     tags=["User Role Association", "Get Users with Role"],
     dependencies=[
         Depends(get_db_session),
-        Depends(get_db_session),
         Depends(authenticator.authenticate),
         Depends(authenticator.require_role("Admin")),
     ],
@@ -305,7 +304,6 @@ async def get_users_with_role(
     },
     tags=["User Role Association", "Get User Roles"],
     dependencies=[
-        Depends(get_db_session),
         Depends(get_db_session),
         Depends(authenticator.authenticate),
         Depends(authenticator.require_role("Admin")),

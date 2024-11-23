@@ -4,13 +4,11 @@ import logging
 from typing import Any, Dict, List
 from uuid import UUID
 
-from fastapi import HTTPException, status
-from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from core.db.models.users.user_gender import UserGender
 from core.services.base_service import BaseService
+from exceptions.exception_handler import ExceptionHandler
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -49,6 +47,9 @@ class UserGenderService(BaseService):
 
     async def get_genders_list(self) -> List[UserGender]:
         """
+        Получает список гендеров
+
+        :return: Список объектов ролей пользователей.
         :raises HTTPException: Если произошла ошибка базы данных.
         """
         try:
@@ -56,13 +57,10 @@ class UserGenderService(BaseService):
             result = await self.db_session.execute(query)
             genders = result.scalars().all()
             return genders
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            logger.error(f"Unexpected error while getting genders list: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected database error occurred",
-            )
+            logger.error(f"Error getting genders list: {e}")
+            ExceptionHandler(e)
 
     async def update_gender(self, gender_id: UUID, update_data: Dict[str, Any]) -> UserGender:
         """

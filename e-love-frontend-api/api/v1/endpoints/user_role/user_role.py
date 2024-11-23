@@ -17,6 +17,7 @@ router = APIRouter(
 )
 
 
+# TODO: update docstrings
 @router.post(
     "/",
     response_model=UserRoleOutput,
@@ -110,7 +111,7 @@ async def get_user_roles_list(
     db: AsyncSession = Depends(get_db_session),
 ):
     """
-    Get a list of user roles (without pagination, it's not needed here).
+    Get a list of user roles.
 
     """
     user_role_service = UserRoleService(db)

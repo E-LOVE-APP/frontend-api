@@ -1,14 +1,17 @@
 import asyncio
+import logging
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 from uuid import UUID
 
+from exceptions.exception_handler import ExceptionHandler
 from fastapi import HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 ModelType = TypeVar("ModelType")
+
+logger = logging.getLogger(__name__)
 
 
 class BaseService:
@@ -39,11 +42,10 @@ class BaseService:
             if not obj:
                 raise HTTPException(status_code=404, detail=f"{model.__name__} not found")
             return obj
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            raise HTTPException(
-                status_code=500, detail="An error occurred while accessing the database."
-            )
+            logger.error(f"Error in get_object_by_id: {e}")
+            ExceptionHandler(e)
 
     async def create_object(
         self,
@@ -89,11 +91,10 @@ class BaseService:
             await self.db_session.commit()
             await self.db_session.refresh(new_object)
             return new_object
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            raise HTTPException(
-                status_code=500, detail=f"An error occurred while creating the object. , {e}"
-            )
+            logger.error(f"Error in create_object method: {e}")
+            ExceptionHandler(e)
 
     async def update_object(
         self,
@@ -133,11 +134,10 @@ class BaseService:
             await self.db_session.commit()
             await self.db_session.refresh(obj)
             return obj
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            raise HTTPException(
-                status_code=500, detail="An error occurred while updating the object."
-            )
+            logger.error(f"Error in update_object method: {e}")
+            ExceptionHandler(e)
 
     async def delete_object_by_id(self, model: Type[ModelType], object_id: UUID) -> None:
         """
@@ -153,8 +153,7 @@ class BaseService:
             await self.db_session.delete(obj_to_delete)
             await self.db_session.commit()
 
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            raise HTTPException(
-                status_code=500, detail="An error occurred while deleting the object."
-            )
+            logger.error(f"Error in delete_object method: {e}")
+            ExceptionHandler(e)

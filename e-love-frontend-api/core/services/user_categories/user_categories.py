@@ -2,17 +2,14 @@ import logging
 from typing import List
 from uuid import UUID
 
-from fastapi import HTTPException, status
-from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
-
 from core.db.models.categories.categories import Categories
 from core.db.models.intermediate_models.user_categories import user_categories_table
 from core.db.models.users.users import User
 from core.services.categories.categories import CategoriesService
 from core.services.users.users import UserService
+from exceptions.exception_handler import ExceptionHandler
+from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -30,6 +27,23 @@ class UserCategoriesAssociationService:
         super().__init__(db_session)
         self.user_service = user_service
         self.category_service = category_service
+
+    async def get_user_categories(self, user_id: UUID) -> List[Categories]:
+        """
+        Получает все связанные с пользователем категории.
+        :param user_id: Идентификатор пользователя.
+        :return: Список категорий пользователя.
+        :raises HTTPException: Если пользователь не найден или произошла ошибка базы данных.
+        """
+        try:
+            user = await self.user_service.get_user_by_id(user_id=user_id)
+
+            return user.categories
+
+        except Exception as e:
+            await self.db_session.rollback()
+            logger.error(f"Error getting user categories: {e}")
+            ExceptionHandler(e)
 
     async def add_category_to_user(self, user_id: UUID, category_id: UUID) -> None:
         """
@@ -50,15 +64,10 @@ class UserCategoriesAssociationService:
                 )
             user.categories.append(category)
             await self.db_session.commit()
-            await self.db_session.refresh(user)  # Обновляем объект пользователя
-            return user  # Возвращаем пользователя
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            logger.error(f"An error occurred while adding category to the user: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Database session error while adding category to the user.",
-            )
+            logger.error(f"Error adding category to user: {e}")
+            ExceptionHandler(e)
 
     async def add_categories_to_user(self, user_id: UUID, category_ids: List[UUID]) -> None:
         try:
@@ -76,13 +85,10 @@ class UserCategoriesAssociationService:
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="This user already has these categories",
                 )
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            logger.error(f"An error occurred while adding categories to the user: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Database session error while adding categories to the user.",
-            )
+            logger.error(f"Error adding categories to user: {e}")
+            ExceptionHandler(e)
 
     async def update_user_categories(self, user_id: UUID, new_categories_ids: List[UUID]) -> None:
         """
@@ -104,13 +110,10 @@ class UserCategoriesAssociationService:
             user.categories = categories
             await self.db_session.commit()
 
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            logger.error(f"An error occurred while updating user categories: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Database session error while updating user categories.",
-            )
+            logger.error(f"Error updating user categories: {e}")
+            ExceptionHandler(e)
 
     async def remove_category_from_user(self, user_id: UUID, category_id: UUID) -> None:
         """
@@ -131,30 +134,7 @@ class UserCategoriesAssociationService:
                 )
             user.categories.remove(category)
             await self.db_session.commit()
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            logger.error(f"An error occurred while removing category from the user: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Database session error while removing category from the user.",
-            )
-
-    async def get_user_categories(self, user_id: UUID) -> List[Categories]:
-        """
-        Получает все связанные с пользователем категории.
-        :param user_id: Идентификатор пользователя.
-        :return: Список категорий пользователя.
-        :raises HTTPException: Если пользователь не найден или произошла ошибка базы данных.
-        """
-        try:
-            user = await self.user_service.get_user_by_id(user_id=user_id)
-
-            return user.categories
-
-        except SQLAlchemyError as e:
-            await self.db_session.rollback()
-            logger.error(f"An error occurred while fetching categories for the user: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Database session error while fetching categories for the user.",
-            )
+            logger.error(f"Error removing user category: {e}")
+            ExceptionHandler(e)

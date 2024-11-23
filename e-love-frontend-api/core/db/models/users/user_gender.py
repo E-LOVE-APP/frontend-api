@@ -8,6 +8,7 @@ from core.db.models.intermediate_models.user_genders import user_genders_table
 from ..base import BaseModel
 
 
+# TODO: add CASCADE-constraint to this model!
 class UserGender(BaseModel):
     """
     Модель гендера пользователя.

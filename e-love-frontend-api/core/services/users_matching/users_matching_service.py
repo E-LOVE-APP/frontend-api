@@ -17,8 +17,10 @@ from core.db.models.intermediate_models.user_categories import user_categories_t
 from core.db.models.users.users import User
 from core.services.user_categories.user_categories import UserCategoriesAssociationService
 from core.services.user_interaction.user_interaction import UserInteractionService
+from exceptions.exception_handler import ExceptionHandler
 from utils.custom_pagination import Paginator
 from utils.enums.matching_type import MATCHING_PERCENTAGE_RANGES, MatchingType
+from utils.functions.get_total_count import get_total_count
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -176,14 +178,6 @@ class UsersMatchingService:
 
         return base_query
 
-    # TODO: перенести в utils
-    # TODO: add docstring
-    async def get_total_count(self, main_query: Select) -> int:
-        count_query = select(func.count()).select_from(main_query.subquery())
-        total_result = await self.db_session.execute(count_query)
-        total = total_result.scalar_one()
-        return total
-
     # TODO: добавить так же вывод постов юзера
     async def get_matching_users_list(
         self,
@@ -255,17 +249,14 @@ class UsersMatchingService:
 
             # Используем три строчки внизу для того чтобы вернуть Tuple в виде:
             # {matching_users: List[Users], total: len(matching_users), next_token: str}
-
+            # TODO: этот функционал можно вынести в отдельную функцию, возможно даже в самом пагинаторе
             matching_users = paginated_response["matching_users"]
-            total = await self.get_total_count(main_query=main_query)
+            total = await get_total_count(db_session=self.db_session, main_query=main_query)
             next_token = paginated_response["next_token"]
 
             return matching_users, total, next_token
 
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            logger.error(f"Error while fetching matching users: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An error occurred while fetching matching users.",
-            )
+            logger.error(f"Error getting users matching list: {e}")
+            ExceptionHandler(e)

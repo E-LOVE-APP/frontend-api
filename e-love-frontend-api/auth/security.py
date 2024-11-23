@@ -13,6 +13,7 @@ jwt_service = JWTService()
 security = HTTPBearer()
 
 
+# TODO: improve with refreshToken.
 class Authenticator:
     def __init__(self, jwt_service: JWTService):
         self.jwt_service = jwt_service

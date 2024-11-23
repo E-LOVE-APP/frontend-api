@@ -8,6 +8,7 @@ from core.db.models.intermediate_models.user_roles import user_roles_table
 from ..base import BaseModel
 
 
+# TODO: add CASCADE-constraint to this model!
 class UserRole(BaseModel):
     """
     Модель роли пользователя.
