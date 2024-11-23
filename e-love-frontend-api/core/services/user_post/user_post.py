@@ -2,14 +2,13 @@ import logging
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from fastapi import HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db.models.posts.user_post import UserPost
 from core.schemas.posts.user_post_schema import PostCreate
 from core.services.base_service import BaseService
+from exceptions.exception_handler import ExceptionHandler
 from utils.custom_pagination import Paginator
 
 logger = logging.getLogger(__name__)
@@ -51,18 +50,15 @@ class UserPostService(BaseService):
                 base_query=base_query,
                 next_token=next_token,
                 filters=None,
-                model_name="posts",
+                model_name="items",
                 limit=limit,
             )
 
             return response
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
-            logger.error(f"Unexpected error while getting posts list: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected database error occurred",
-            )
+            logger.error(f"Error getting posts list: {e}")
+            ExceptionHandler(e)
 
     async def update_post(self, post_id: UUID, update_data: UserPost) -> UserPost:
         return await self.update_object(

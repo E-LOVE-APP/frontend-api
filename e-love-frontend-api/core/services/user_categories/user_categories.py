@@ -2,14 +2,15 @@ import logging
 from typing import List
 from uuid import UUID
 
+from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from core.db.models.categories.categories import Categories
 from core.db.models.intermediate_models.user_categories import user_categories_table
 from core.db.models.users.users import User
 from core.services.categories.categories import CategoriesService
 from core.services.users.users import UserService
 from exceptions.exception_handler import ExceptionHandler
-from fastapi import HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -24,7 +25,7 @@ class UserCategoriesAssociationService:
         user_service: UserService,
         category_service: CategoriesService,
     ):
-        super().__init__(db_session)
+        self.db_session = db_session
         self.user_service = user_service
         self.category_service = category_service
 

@@ -4,13 +4,12 @@ import logging
 from typing import Any, Dict, List
 from uuid import UUID
 
-from fastapi import HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db.models.users.user_status import UserStatus
 from core.services.base_service import BaseService
+from exceptions.exception_handler import ExceptionHandler
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -53,7 +52,7 @@ class UserStatusService(BaseService):
             result = await self.db_session.execute(query)
             statuses = result.scalars().all()
             return statuses
-        except SQLAlchemyError as e:
+        except Exception as e:
             await self.db_session.rollback()
             logger.error(f"Unexpected error while getting status list: {e}")
             raise HTTPException(
@@ -74,20 +73,11 @@ class UserStatusService(BaseService):
                 model=UserStatus, object_id=status_id, data=update_data
             )
             return updated_status
-        except IntegrityError as e:
+
+        except Exception as e:
             await self.db_session.rollback()
-            logger.error(f"Integrity error while updating status {status_id}: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot update status due to related records in other tables.",
-            )
-        except SQLAlchemyError as e:
-            await self.db_session.rollback()
-            logger.error(f"Unexpected error while updating status {status_id}: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"An unexpected database error occurred.",
-            )
+            logger.error(f"Error updating status: {e}")
+            ExceptionHandler(e)
 
     async def delete_status(self, status_id: UUID) -> None:
         """

@@ -102,7 +102,7 @@ async def get_post_by_id(
     tags=["User posts", "Get user posts list", "List"],
 )
 async def get_post_list(
-    limit: int = Query(10, ge=1),
+    limit: int = 10,
     next_token: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db_session),
 ):
@@ -111,11 +111,7 @@ async def get_post_list(
         limit=limit,
         next_token=next_token,
     )
-    return {
-        "items": response["posts"],
-        "has_next": response["has_next"],
-        "next_token": response["next_token"],
-    }
+    return response
 
 
 @router.put(
