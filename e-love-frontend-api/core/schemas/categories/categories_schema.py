@@ -38,17 +38,17 @@ class CategoryUpdateSchema(CategoryBase):
     )
 
 
-class CategoryOutput(CategoryBase):
-    category_name: Optional[str] = Field(
-        None, max_length=50, min_length=1, description="Name of the category"
-    )
-    category_descr: Optional[str] = Field(
-        None, max_length=250, min_length=1, description="Descr of the role"
-    )
-    category_icon: Optional[str] = Field(
-        None, max_length=250, min_length=1, description="icon of the role"
-    )
+class CategoryOutput(BaseModel):
+    id: UUID
+    category_name: str
+    category_descr: str
+    category_icon: Optional[str]
+
+    class Config:
+        orm_mode = True
 
 
-class CategoryListResponse(CategoryBase):
-    categories: List[CategoryOutput]
+class CategoriesListResponse(BaseModel):
+    items: List[CategoryOutput]
+    has_next: bool
+    next_token: Optional[str]

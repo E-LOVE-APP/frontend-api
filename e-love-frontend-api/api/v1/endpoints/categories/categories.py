@@ -1,12 +1,14 @@
+import logging
 from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth.security import Authenticator, authenticator
 from configuration.database import get_db_session
 from core.schemas.categories.categories_schema import (
+    CategoriesListResponse,
     CategoryCreate,
     CategoryOutput,
     CategoryUpdateSchema,
@@ -88,11 +90,11 @@ async def get_category_by_id(
 
 @router.get(
     "/",
-    response_model=List[CategoryOutput],
+    response_model=CategoriesListResponse,
     responses={
         200: {
             "description": "Get categories list.",
-            "model": List[CategoryOutput],
+            "model": CategoriesListResponse,
         },
         500: {
             "description": "Server error.",
@@ -103,18 +105,21 @@ async def get_category_by_id(
     dependencies=[
         Depends(get_db_session),
         Depends(authenticator.authenticate),
-        # Depends(authenticator.require_role("Admin")),
     ],
 )
 async def get_category_list(
+    limit: int = 10,
+    next_token: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db_session),
 ):
     """
-    Get a list of categories.
+    Получает список категорий с пагинацией.
 
+    - **limit**: Количество категорий на странице (по умолчанию 10).
+    - **next_token**: Токен для получения следующей страницы.
     """
     categories_service = CategoriesService(db)
-    return await categories_service.get_category_list()
+    return await categories_service.get_category_list(limit=limit, next_token=next_token)
 
 
 @router.put(

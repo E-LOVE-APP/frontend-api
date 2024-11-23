@@ -1,12 +1,13 @@
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from uuid import UUID
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db.models.categories.categories import Categories
 from core.services.base_service import BaseService
 from exceptions.exception_handler import ExceptionHandler
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from utils.custom_pagination import Paginator
 
 logger = logging.getLogger(__name__)
@@ -28,12 +29,30 @@ class CategoriesService(BaseService):
     async def get_category_by_id(self, category_id: UUID) -> Categories:
         return await self.get_object_by_id(Categories, category_id)
 
-    async def get_category_list(self) -> List[Categories]:
+    async def get_category_list(
+        self,
+        limit: int = 10,
+        next_token: Optional[str] = None,
+    ) -> List[Categories]:
+        """
+        Получает список категорий с пагинацией.
+
+        :param limit: Количество категорий на странице (по умолчанию 10).
+        :param next_token: Токен для получения следующей страницы.
+        :return: Словарь с категориями и информацией о пагинации.
+        """
         try:
-            query = select(Categories)
-            result = await self.db_session.execute(query)
-            categories = result.scalars().all()
-            return categories
+            base_query = select(Categories)
+
+            response = await self.paginator.paginate_query(
+                base_query=base_query,
+                next_token=next_token,
+                filters=None,
+                model_name="items",
+                limit=limit,
+            )
+
+            return response
         except Exception as e:
             await self.db_session.rollback()
             logger.error(f"Error getting categories list: {e}")
