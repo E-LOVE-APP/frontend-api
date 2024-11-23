@@ -48,7 +48,8 @@ async def add_category_to_user(
     )
     try:
         await user_category_service.add_category_to_user(request.user_id, request.category_id)
-        return {"message": "Category added to user successfully."}
+        categories = await user_category_service.get_user_categories(request.user_id)
+        return categories
     except HTTPException as e:
         raise e
     except SQLAlchemyError:
