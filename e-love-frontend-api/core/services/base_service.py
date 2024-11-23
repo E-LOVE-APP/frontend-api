@@ -3,11 +3,12 @@ import logging
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 from uuid import UUID
 
-from exceptions.exception_handler import ExceptionHandler
 from fastapi import HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from exceptions.exception_handler import ExceptionHandler
 
 ModelType = TypeVar("ModelType")
 
