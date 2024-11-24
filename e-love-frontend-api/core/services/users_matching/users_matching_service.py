@@ -4,6 +4,12 @@ import logging
 from typing import List, Optional, Tuple
 from uuid import UUID
 
+from core.db.models.categories.categories import Categories
+from core.db.models.intermediate_models.user_categories import user_categories_table
+from core.db.models.users.users import User
+from core.services.user_categories.user_categories import UserCategoriesAssociationService
+from core.services.user_interaction.user_interaction import UserInteractionService
+from exceptions.exception_handler import ExceptionHandler
 from fastapi import HTTPException, status
 from sqlalchemy import Float, and_, func, select
 from sqlalchemy.exc import SQLAlchemyError
@@ -11,13 +17,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql import Select, Subquery
 from sqlalchemy.sql.elements import Label
-
-from core.db.models.categories.categories import Categories
-from core.db.models.intermediate_models.user_categories import user_categories_table
-from core.db.models.users.users import User
-from core.services.user_categories.user_categories import UserCategoriesAssociationService
-from core.services.user_interaction.user_interaction import UserInteractionService
-from exceptions.exception_handler import ExceptionHandler
 from utils.custom_pagination import Paginator
 from utils.enums.matching_type import MATCHING_PERCENTAGE_RANGES, MatchingType
 from utils.functions.get_total_count import get_total_count
@@ -171,8 +170,18 @@ class UsersMatchingService:
 
         base_query = (
             select(User)
+            .options(
+                selectinload(User.categories),
+                selectinload(User.posts),
+                selectinload(User.genders),
+            )
             .join(potential_users_subq, User.id == potential_users_subq.c.user_id)
-            .where(and_(overlap_percentage >= min_percentage, overlap_percentage <= max_percentage))
+            .where(
+                and_(
+                    overlap_percentage >= min_percentage,
+                    overlap_percentage <= max_percentage,
+                )
+            )
             .order_by(overlap_percentage.desc())
         )
 

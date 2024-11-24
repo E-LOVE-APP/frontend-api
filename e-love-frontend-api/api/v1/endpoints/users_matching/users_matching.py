@@ -1,11 +1,7 @@
 # api/v1/endpoints/users_matching/users_matching.py
-
+import logging
 from typing import Optional
 from uuid import UUID
-
-from fastapi import APIRouter, Depends
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth.security import authenticator
 from configuration.database import get_db_session
@@ -19,10 +15,15 @@ from core.services.user_interaction.user_interaction import UserInteractionServi
 from core.services.users.users import UserService
 from core.services.users_matching.users_matching_service import UsersMatchingService
 from dependencies.validate_query_params import validate_query_params
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import ValidationError
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from utils.custom_pagination import Paginator
 from utils.enums.matching_type import MatchingType
 
 router = APIRouter(prefix="/users-matching")
+logger = logging.getLogger(__name__)
 
 
 @router.get(
@@ -91,11 +92,23 @@ async def get_matching_users_list(
     # Сначала этот код отрезает лишние атрибуты из модели UserOutput, которые не входят в pydantic-схему
     # Потом туда добавляются CategoryOutput сущности категорий.
     # TODO: refactor
-    matching_users_output = [
-        UserOutput(**{k: v for k, v in user.__dict__.items() if k in UserOutput.__fields__})
-        for user in matching_users
-    ]
+    # matching_users_output = [
+    #     UserOutput(**{k: v for k, v in user.__dict__.items() if k in UserOutput.__fields__})
+    #     for user in matching_users
+    # ]
+
+    # return UsersMatchingListResponse(
+    #     matching_users=matching_users_output, total=total, next_token=next_token
+    # )
+
+    try:
+        matching_users_output = [UserOutput.from_orm(user) for user in matching_users]
+    except ValidationError as e:
+        logger.error(f"Validation error: {e}")
+        raise HTTPException(status_code=500, detail="Data serialization error")
 
     return UsersMatchingListResponse(
-        matching_users=matching_users_output, total=total, next_token=next_token
+        matching_users=matching_users_output,
+        total=total,
+        next_token=next_token,
     )
