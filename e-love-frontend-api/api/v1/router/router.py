@@ -1,8 +1,6 @@
 # app/api/v1/router/router.py
 # pylint: disable-all
 # type: ignore
-from fastapi import APIRouter
-
 from api.v1.endpoints.categories.categories import router as categories_router
 from api.v1.endpoints.user_categories.user_categories import router as user_categories_router
 from api.v1.endpoints.user_gender.user_gender import router as user_gender_router
@@ -13,6 +11,8 @@ from api.v1.endpoints.user_role_association.user_roles_association import (
 )
 from api.v1.endpoints.user_status.user_status import router as user_status_router
 from api.v1.endpoints.users.users import router as users_router
+from api.v1.endpoints.users_matching.users_matching import router as users_matching_router
+from fastapi import APIRouter
 
 api_router = APIRouter()
 api_router.include_router(users_router, prefix="/api/v1", tags=["Users"])
@@ -25,6 +25,11 @@ api_router.include_router(categories_router, prefix="/api/v1", tags=["Categories
 api_router.include_router(user_status_router, prefix="/api/v1", tags=["User Status"])
 api_router.include_router(user_post_router, prefix="/api/v1", tags=["User Post"])
 api_router.include_router(user_categories_router, prefix="/api/v1", tags=["User Categories"])
+api_router.include_router(
+    users_matching_router,
+    prefix="/api/v1",
+    tags=["Users matching", "Matching", "Match", "User", "Users"],
+)
 
 # ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⠿⠟⢿⣻⣟⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢻⡝⠬⢋⣤⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⢋⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣦⣄⡀⠀⠀⠀⠀⢀⠢⠑⡌⠲⣉
 # ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⢟⣫⣵⣶⣶⣿⣿⣿⣿⣟⡳⠶⣶⣬⣝⠻⣿⣿⢿⡿⠟⠿⡹⠓⢎⣡⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⣰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡀⠀⠀⠀⠁⢀⠃⡐
