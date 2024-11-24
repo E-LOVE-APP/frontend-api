@@ -1,9 +1,10 @@
 from typing import List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field
-
+from core.schemas.posts.user_post_schema import PostOutput
+from core.schemas.user_gender.user_gender_schema import UserGenderOutput
 from core.schemas.users_categories.users_categories_schema import CategoryOutput
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 """Pydantic schemas for Users."""
 
@@ -15,9 +16,7 @@ class UserBase(BaseModel):
     last_name: str = Field(..., max_length=50, min_length=1, description="Last name of the user")
     email: EmailStr = Field(..., description="Unique email address of the user")
 
-    class Config:
-        orm_mode = True
-        extra = "forbid"
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserCreate(UserBase):
@@ -51,11 +50,10 @@ class UserOutput(UserBase):
     id: UUID = Field(..., description="ID of the user in UUID format")
     user_descr: Optional[str] = Field(None, max_length=500, description="Description of the user")
     categories: Optional[List[CategoryOutput]] = None
+    posts: Optional[List[PostOutput]] = None
+    genders: Optional[List[UserGenderOutput]] = None
 
-    class Config:
-        orm_mode = True
-        extra = "forbid"
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UsersListResponse(BaseModel):

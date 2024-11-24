@@ -1,7 +1,7 @@
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 # TODO: Добавить валидаций
 """Basic User gender model pydantic schema"""
@@ -29,7 +29,10 @@ class UserGenderUpdate(UserGenderBase):
     )
 
 
-class UserGenderOutput(UserGenderBase):
+class UserGenderOutput(BaseModel):
+    id: UUID
     gender_name: Optional[str] = Field(
         None, max_length=50, min_length=2, description="Name of the gender"
     )
+
+    model_config = ConfigDict(from_attributes=True)
