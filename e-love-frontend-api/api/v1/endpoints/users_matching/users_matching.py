@@ -3,6 +3,11 @@ import logging
 from typing import Optional
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import ValidationError
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from auth.security import authenticator
 from configuration.database import get_db_session
 from core.db.models.users.users import User
@@ -15,10 +20,6 @@ from core.services.user_interaction.user_interaction import UserInteractionServi
 from core.services.users.users import UserService
 from core.services.users_matching.users_matching_service import UsersMatchingService
 from dependencies.validate_query_params import validate_query_params
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import ValidationError
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 from utils.custom_pagination import Paginator
 from utils.enums.matching_type import MatchingType
 
