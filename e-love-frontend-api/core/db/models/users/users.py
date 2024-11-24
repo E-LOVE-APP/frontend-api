@@ -1,10 +1,6 @@
 from typing import List
 from uuid import UUID
 
-from passlib.hash import bcrypt
-from sqlalchemy import Column, ForeignKey, String
-from sqlalchemy.orm import Mapped, relationship
-
 from core.db.models.audit_logs.audit_logs import AuditLogs
 from core.db.models.categories.categories import Categories
 from core.db.models.intermediate_models.posts_categories import posts_categories_table
@@ -17,6 +13,9 @@ from core.db.models.users.user_images import UserImages
 from core.db.models.users.user_interaction import UserInteraction
 from core.db.models.users.user_role import UserRole
 from core.db.models.users.user_status import UserStatus
+from passlib.hash import bcrypt
+from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy.orm import Mapped, relationship
 
 from ..base import BaseModel
 
@@ -55,13 +54,18 @@ class User(BaseModel):
 
     image: Mapped["UserImages"] = relationship("UserImages", back_populates="user")
 
-    posts: Mapped["UserPost"] = relationship("UserPost", back_populates="user", lazy="selectin")
+    posts: Mapped[List["UserPost"]] = relationship(
+        "UserPost", back_populates="user", lazy="selectin"
+    )
 
     logs: Mapped["AuditLogs"] = relationship("AuditLogs", back_populates="user")
 
     # Many To Many relationships
     genders: Mapped[List["UserGender"]] = relationship(
-        "UserGender", secondary=user_genders_table, back_populates="users", lazy="selectin"
+        "UserGender",
+        secondary=user_genders_table,
+        back_populates="users",
+        lazy="selectin",
     )
 
     roles: Mapped[List["UserRole"]] = relationship(
