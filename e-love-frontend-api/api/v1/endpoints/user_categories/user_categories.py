@@ -41,6 +41,15 @@ async def add_category_to_user(
     db_session: AsyncSession = Depends(get_db_session),
     _: UUID = Depends(authenticator.authenticate),
 ):
+    """
+    Добавляет категорию пользователю.
+
+    :param request: Объект запроса с id пользователя и id категории.
+    :param db_session: Асинхронная сессия базы данных.
+    :param _: UUID пользователя после аутентификации.
+    :return: Список категорий пользователя после добавления.
+    :raises HTTPException: Если пользователь или категория не найдены.
+    """
     user_service = UserService(db_session)
     category_service = CategoriesService(db_session)
     user_category_service = UserCategoriesAssociationService(
@@ -69,6 +78,15 @@ async def add_categories_to_user(
     db_session: AsyncSession = Depends(get_db_session),
     _: UUID = Depends(authenticator.authenticate),
 ):
+    """
+    Добавляет несколько категорий пользователю.
+
+    :param request: Объект запроса с id пользователя и списком id категорий.
+    :param db_session: Асинхронная сессия базы данных.
+    :param _: UUID пользователя после аутентификации.
+    :return: Сообщение об успешном добавлении категорий.
+    :raises HTTPException: Если пользователь или категории не найдены, или при внутренней ошибке сервера.
+    """
     user_service = UserService(db_session)
     category_service = CategoriesService(db_session)
     user_category_service = UserCategoriesAssociationService(
@@ -96,6 +114,15 @@ async def update_user_categories(
     db_session: AsyncSession = Depends(get_db_session),
     _: UUID = Depends(authenticator.authenticate),
 ):
+    """
+    Обновляет категории пользователя.
+
+    :param request: Объект запроса с id пользователя и списком новых id категорий.
+    :param db_session: Асинхронная сессия базы данных.
+    :param _: UUID пользователя после аутентификации.
+    :return: Сообщение об успешном обновлении категорий.
+    :raises HTTPException: Если пользователь или категории не найдены, или при внутренней ошибке сервера.
+    """
     user_service = UserService(db_session)
     category_service = CategoriesService(db_session)
     user_category_service = UserCategoriesAssociationService(
@@ -125,6 +152,15 @@ async def remove_category_from_user(
     db_session: AsyncSession = Depends(get_db_session),
     _: UUID = Depends(authenticator.authenticate),
 ):
+    """
+    Удаляет категорию у пользователя.
+
+    :param request: Объект запроса с id пользователя и id категории.
+    :param db_session: Асинхронная сессия базы данных.
+    :param _: UUID пользователя после аутентификации.
+    :return: Сообщение об успешном удалении категории.
+    :raises HTTPException: Если пользователь или категория не найдены, или при внутренней ошибке сервера.
+    """
     user_service = UserService(db_session)
     category_service = CategoriesService(db_session)
     user_category_service = UserCategoriesAssociationService(
@@ -153,6 +189,15 @@ async def get_user_categories(
     db_session: AsyncSession = Depends(get_db_session),
     _: UUID = Depends(authenticator.authenticate),
 ):
+    """
+    Получает список категорий пользователя.
+
+    :param user_id: id пользователя.
+    :param db_session: Асинхронная сессия базы данных.
+    :param _: UUID пользователя после аутентификации.
+    :return: Список категорий пользователя.
+    :raises HTTPException: Если пользователь не найден или при внутренней ошибке сервера.
+    """
     user_service = UserService(db_session)
     category_service = CategoriesService(db_session)
     user_category_service = UserCategoriesAssociationService(
