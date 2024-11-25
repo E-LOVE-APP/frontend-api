@@ -2,9 +2,7 @@ import logging
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from fastapi import HTTPException
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db.models.categories.categories import Categories
@@ -77,7 +75,7 @@ class CategoriesService(BaseService):
         except Exception as e:
             await self.db_session.rollback()
             logger.error(f"Unexpected error while updating category {category_id}: {e}")
-            raise HTTPException(status_code=500, detail="Unexpected server error.")
+            ExceptionHandler(e)
 
     async def delete_category(self, category_id: UUID) -> None:
         try:
@@ -85,4 +83,4 @@ class CategoriesService(BaseService):
         except Exception as e:
             await self.db_session.rollback()
             logger.error(f"Unexpected error while deleting category {category_id}: {e}")
-            raise HTTPException(status_code=500, detail="Unexpected server error.")
+            ExceptionHandler(e)

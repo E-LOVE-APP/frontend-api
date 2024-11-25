@@ -33,9 +33,14 @@ class UserStatusService(BaseService):
         :param status_data: Словарь с данными статуса.
         :return: Созданный объект статуса пользователя.
         """
-        return await self.create_object(
-            model=UserStatus, data=status_data, unique_fields=["status_name"]
-        )
+        try:
+            return await self.create_object(
+                model=UserStatus, data=status_data, unique_fields=["status_name"]
+            )
+        except Exception as e:
+            await self.db_session.rollback()
+            logger.error(f"Unexpected error while creating user status: {e}")
+            ExceptionHandler(e)
 
     async def get_status_by_id(self, status_id: UUID) -> UserStatus:
         """
@@ -44,7 +49,12 @@ class UserStatusService(BaseService):
         :param status_id: Идентификатор статус.
         :return: Объект статуса пользователя.
         """
-        return await self.get_object_by_id(UserStatus, status_id)
+        try:
+            return await self.get_object_by_id(UserStatus, status_id)
+        except Exception as e:
+            await self.db_session.rollback()
+            logger.error(f"Unexpected error while getting status: {e}")
+            ExceptionHandler(e)
 
     async def get_status_list(self) -> List[UserStatus]:
         try:
@@ -55,10 +65,7 @@ class UserStatusService(BaseService):
         except Exception as e:
             await self.db_session.rollback()
             logger.error(f"Unexpected error while getting status list: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected database error occurred",
-            )
+            ExceptionHandler(e)
 
     async def update_status(self, status_id: UUID, update_data: Dict[str, Any]) -> UserStatus:
         """
@@ -73,10 +80,7 @@ class UserStatusService(BaseService):
         except Exception as e:
             await self.db_session.rollback()
             logger.error(f"Unexpected error while updating status: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected database error occurred",
-            )
+            ExceptionHandler(e)
 
     async def delete_status(self, status_id: UUID) -> None:
         """
@@ -89,7 +93,4 @@ class UserStatusService(BaseService):
         except Exception as e:
             await self.db_session.rollback()
             logger.error(f"Unexpected error while deleting status: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected database error occurred",
-            )
+            ExceptionHandler(e)
