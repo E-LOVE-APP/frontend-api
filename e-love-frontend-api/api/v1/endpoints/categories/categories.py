@@ -107,7 +107,7 @@ async def get_category_by_id(
         Depends(authenticator.authenticate),
     ],
 )
-async def get_category_list(
+async def get_categories_list(
     limit: int = 10,
     next_token: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db_session),
@@ -119,7 +119,7 @@ async def get_category_list(
     - **next_token**: Токен для получения следующей страницы.
     """
     categories_service = CategoriesService(db)
-    return await categories_service.get_category_list(limit=limit, next_token=next_token)
+    return await categories_service.get_categories_list(limit=limit, next_token=next_token)
 
 
 @router.put(
