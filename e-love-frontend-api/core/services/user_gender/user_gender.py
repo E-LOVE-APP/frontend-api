@@ -71,22 +71,7 @@ class UserGenderService(BaseService):
         :param update_data: Словарь с обновленными данными гендера.
         :return: Обновленный объект гендера пользователя.
         """
-        try:
-            updated_gender = await self.update_object(
-                model=UserGender, object_id=gender_id, data=update_data
-            )
-            return updated_gender
-        except IntegrityError as e:
-            await self.db_session.rollback()
-            logger.error(f"Integrity error while updating gender {gender_id}: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot update gender due to related records in other tables.",
-            )
-        except Exception as e:
-            await self.db_session.rollback()
-            logger.error(f"Error updating genders list: {e}")
-            ExceptionHandler(e)
+        return await self.update_object(model=UserGender, object_id=gender_id, data=update_data)
 
     async def delete_gender(self, gender_id: UUID) -> None:
         """

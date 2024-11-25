@@ -2,7 +2,9 @@ import logging
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
+from fastapi import HTTPException
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db.models.categories.categories import Categories
@@ -29,7 +31,7 @@ class CategoriesService(BaseService):
     async def get_category_by_id(self, category_id: UUID) -> Categories:
         return await self.get_object_by_id(Categories, category_id)
 
-    async def get_category_list(
+    async def get_categories_list(
         self,
         limit: int = 10,
         next_token: Optional[str] = None,
@@ -42,12 +44,13 @@ class CategoriesService(BaseService):
         :return: Словарь с категориями и информацией о пагинации.
         """
         try:
+            filters = None
             base_query = select(Categories)
 
             response = await self.paginator.paginate_query(
                 base_query=base_query,
                 next_token=next_token,
-                filters=None,
+                filters=filters,
                 model_name="items",
                 limit=limit,
             )
@@ -59,7 +62,27 @@ class CategoriesService(BaseService):
             ExceptionHandler(e)
 
     async def update_category(self, category_id: UUID, update_data: Dict[str, Any]) -> Categories:
-        return await self.update_object(model=Categories, object_id=category_id, data=update_data)
+        """
+        Обновляет информацию о категории.
+
+        :param category_id: Идентификатор категории.
+        :param update_data: Объект с обновленными данными категории.
+        :return: Обновленный объект категории.
+        :raises HTTPException: Если возникает ошибка целостности данных или внутренняя ошибка сервера.
+        """
+        try:
+            return await self.update_object(
+                model=Categories, object_id=category_id, data=update_data
+            )
+        except IntegrityError as e:
+            logger.error(f"Integrity error while updating category {category_id}: {e}")
+            raise HTTPException(
+                status_code=400, detail="Integrity error: вincorect foreign keys or incorect data."
+            )
+        except Exception as e:
+            await self.db_session.rollback()
+            logger.error(f"Unexpected error while updating category {category_id}: {e}")
+            raise HTTPException(status_code=500, detail="Unexpected server error.")
 
     async def delete_category(self, category_id: UUID) -> None:
         await self.delete_object_by_id(Categories, category_id)

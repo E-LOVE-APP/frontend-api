@@ -68,16 +68,7 @@ class UserStatusService(BaseService):
         :param update_data: Словарь с обновленными данными статуса.
         :return: Обновленный объект статуса пользователя.
         """
-        try:
-            updated_status = await self.update_object(
-                model=UserStatus, object_id=status_id, data=update_data
-            )
-            return updated_status
-
-        except Exception as e:
-            await self.db_session.rollback()
-            logger.error(f"Error updating status: {e}")
-            ExceptionHandler(e)
+        return await self.update_object(model=UserStatus, object_id=status_id, data=update_data)
 
     async def delete_status(self, status_id: UUID) -> None:
         """
