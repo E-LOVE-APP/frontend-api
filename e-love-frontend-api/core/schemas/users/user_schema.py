@@ -1,9 +1,10 @@
 from typing import List, Optional
 from uuid import UUID
 
+from pydantic import BaseModel, EmailStr, Field
+
 from core.schemas.user_gender.user_gender_schema import UserGenderOutput
 from core.schemas.users_categories.users_categories_schema import CategoryOutput
-from pydantic import BaseModel, EmailStr, Field
 
 """Pydantic schemas for Users."""
 
