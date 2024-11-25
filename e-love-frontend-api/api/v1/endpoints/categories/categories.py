@@ -109,7 +109,7 @@ async def get_category_by_id(
 )
 async def get_categories_list(
     limit: int = 10,
-    next_token: Optional[str] = Query(None),
+    next_token: Optional[str] = None,
     db: AsyncSession = Depends(get_db_session),
 ):
     """

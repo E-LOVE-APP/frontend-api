@@ -40,16 +40,18 @@ class UserPostService(BaseService):
 
     async def get_post_list(
         self,
-        limit: int = 3,
+        limit: int = 10,
         next_token: Optional[str] = None,
     ) -> List[UserPost]:
         try:
 
+            filters = None
             base_query = select(UserPost)
 
             response = await self.paginator.paginate_query(
                 base_query=base_query,
                 next_token=next_token,
+                filters=filters,
                 model_name="items",
                 limit=limit,
             )
@@ -73,13 +75,15 @@ class UserPostService(BaseService):
             return await self.update_object(
                 model=UserPost, object_id=post_id, data=update_data.dict(exclude_unset=True)
             )
-        except IntegrityError as e:
-            logger.error(f"Integrity error while updating post {post_id}: {e}")
-            raise HTTPException(status_code=400)
         except Exception as e:
             await self.db_session.rollback()
             logger.error(f"Unexpected error while updating post {post_id}: {e}")
             raise HTTPException(status_code=500, detail="Unexpected server error")
 
     async def delete_post(self, post_id: UUID) -> None:
-        await self.delete_object_by_id(UserPost, post_id)
+        try:
+            await self.delete_object_by_id(UserPost, post_id)
+        except Exception as e:
+            await self.db_session.rollback()
+            logger.error(f"Unexpected error while deleting post {post_id}: {e}")
+            raise HTTPException(status_code=500, detail="Unexpected server error")

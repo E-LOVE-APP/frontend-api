@@ -74,15 +74,15 @@ class CategoriesService(BaseService):
             return await self.update_object(
                 model=Categories, object_id=category_id, data=update_data
             )
-        except IntegrityError as e:
-            logger.error(f"Integrity error while updating category {category_id}: {e}")
-            raise HTTPException(
-                status_code=400, detail="Integrity error: вincorect foreign keys or incorect data."
-            )
         except Exception as e:
             await self.db_session.rollback()
             logger.error(f"Unexpected error while updating category {category_id}: {e}")
             raise HTTPException(status_code=500, detail="Unexpected server error.")
 
     async def delete_category(self, category_id: UUID) -> None:
-        await self.delete_object_by_id(Categories, category_id)
+        try:
+            await self.delete_object_by_id(Categories, category_id)
+        except Exception as e:
+            await self.db_session.rollback()
+            logger.error(f"Unexpected error while deleting category {category_id}: {e}")
+            raise HTTPException(status_code=500, detail="Unexpected server error.")

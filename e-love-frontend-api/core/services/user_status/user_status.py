@@ -68,7 +68,15 @@ class UserStatusService(BaseService):
         :param update_data: Словарь с обновленными данными статуса.
         :return: Обновленный объект статуса пользователя.
         """
-        return await self.update_object(model=UserStatus, object_id=status_id, data=update_data)
+        try:
+            return await self.update_object(model=UserStatus, object_id=status_id, data=update_data)
+        except Exception as e:
+            await self.db_session.rollback()
+            logger.error(f"Unexpected error while updating status: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="An unexpected database error occurred",
+            )
 
     async def delete_status(self, status_id: UUID) -> None:
         """
@@ -76,4 +84,12 @@ class UserStatusService(BaseService):
 
         :param status_id: Идентификатор роли.
         """
-        await self.delete_object_by_id(UserStatus, status_id)
+        try:
+            await self.delete_object_by_id(UserStatus, status_id)
+        except Exception as e:
+            await self.db_session.rollback()
+            logger.error(f"Unexpected error while deleting status: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="An unexpected database error occurred",
+            )

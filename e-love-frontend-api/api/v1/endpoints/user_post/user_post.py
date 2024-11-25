@@ -103,7 +103,7 @@ async def get_post_by_id(
 )
 async def get_post_list(
     limit: int = 10,
-    next_token: Optional[str] = Query(None),
+    next_token: Optional[str] = None,
     db: AsyncSession = Depends(get_db_session),
 ):
     user_post_service = UserPostService(db)

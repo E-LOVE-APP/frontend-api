@@ -1,7 +1,7 @@
 from typing import List
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,6 +20,7 @@ from core.schemas.users.user_schema import UserOutput
 from core.services.categories.categories import CategoriesService
 from core.services.user_categories.user_categories import UserCategoriesAssociationService
 from core.services.users.users import UserService
+from exceptions.exception_handler import ExceptionHandler
 
 router = APIRouter(
     prefix="/user-categories",
@@ -59,10 +60,10 @@ async def add_category_to_user(
         await user_category_service.add_category_to_user(request.user_id, request.category_id)
         categories = await user_category_service.get_user_categories(request.user_id)
         return categories
-    except HTTPException as e:
-        raise e
-    except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Internal server error")
+    except Exception as e:
+        await self.db_session.rollback()
+        logger.error(f"Error adding user categories: {e}")
+        ExceptionHandler(e)
 
 
 @router.post(
@@ -95,10 +96,10 @@ async def add_categories_to_user(
     try:
         await user_category_service.add_categories_to_user(request.user_id, request.category_ids)
         return {"message": "Categories added to user successfully."}
-    except HTTPException as e:
-        raise e
-    except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Internal server error")
+    except Exception as e:
+        await self.db_session.rollback()
+        logger.error(f"Error adding user categories to the user: {e}")
+        ExceptionHandler(e)
 
 
 @router.put(
@@ -133,10 +134,10 @@ async def update_user_categories(
             request.user_id, request.new_category_ids
         )
         return {"message": "User categories updated successfully."}
-    except HTTPException as e:
-        raise e
-    except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Internal server error")
+    except Exception as e:
+        await self.db_session.rollback()
+        logger.error(f"Error updating user categories: {e}")
+        ExceptionHandler(e)
 
 
 @router.delete(
@@ -169,10 +170,10 @@ async def remove_category_from_user(
     try:
         await user_category_service.remove_category_from_user(request.user_id, request.category_id)
         return {"message": "Category removed from user successfully."}
-    except HTTPException as e:
-        raise e
-    except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Internal server error")
+    except Exception as e:
+        await self.db_session.rollback()
+        logger.error(f"Error removing user categories: {e}")
+        ExceptionHandler(e)
 
 
 @router.get(
@@ -206,7 +207,7 @@ async def get_user_categories(
     try:
         categories = await user_category_service.get_user_categories(user_id)
         return categories
-    except HTTPException as e:
-        raise e
-    except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Internal server error")
+    except Exception as e:
+        await self.db_session.rollback()
+        logger.error(f"Error getting user categories: {e}")
+        ExceptionHandler(e)

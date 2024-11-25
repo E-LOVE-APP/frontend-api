@@ -71,7 +71,12 @@ class UserGenderService(BaseService):
         :param update_data: Словарь с обновленными данными гендера.
         :return: Обновленный объект гендера пользователя.
         """
-        return await self.update_object(model=UserGender, object_id=gender_id, data=update_data)
+        try:
+            return await self.update_object(model=UserGender, object_id=gender_id, data=update_data)
+        except Exception as e:
+            await self.db_session.rollback()
+            logger.error(f"Error updating genders list: {e}")
+            ExceptionHandler(e)
 
     async def delete_gender(self, gender_id: UUID) -> None:
         """
@@ -79,4 +84,9 @@ class UserGenderService(BaseService):
 
         :param gender_id: Идентификатор роли.
         """
-        await self.delete_object_by_id(UserGender, gender_id)
+        try:
+            await self.delete_object_by_id(UserGender, gender_id)
+        except Exception as e:
+            await self.db_session.rollback()
+            logger.error(f"Error deleting genders list: {e}")
+            ExceptionHandler(e)
