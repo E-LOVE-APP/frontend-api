@@ -52,6 +52,7 @@ class User(BaseModel):
     status: Mapped["UserStatus"] = relationship("UserStatus", back_populates="users")
 
     # TODO: change the name to 'images'; Probably should also do it like M to M relationship
+
     image: Mapped["UserImages"] = relationship("UserImages", back_populates="user")
 
     posts: Mapped["UserPost"] = relationship("UserPost", back_populates="user", lazy="selectin")
