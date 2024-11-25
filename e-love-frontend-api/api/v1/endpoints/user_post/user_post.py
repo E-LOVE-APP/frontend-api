@@ -107,11 +107,7 @@ async def get_post_list(
     db: AsyncSession = Depends(get_db_session),
 ):
     user_post_service = UserPostService(db)
-    response = await user_post_service.get_post_list(
-        limit=limit,
-        next_token=next_token,
-    )
-    return response
+    return await user_post_service.get_post_list(limit=limit, next_token=next_token)
 
 
 @router.put(

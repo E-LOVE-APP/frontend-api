@@ -44,12 +44,12 @@ class UserPostService(BaseService):
         next_token: Optional[str] = None,
     ) -> List[UserPost]:
         try:
+
             base_query = select(UserPost)
 
             response = await self.paginator.paginate_query(
                 base_query=base_query,
                 next_token=next_token,
-                filters=None,
                 model_name="items",
                 limit=limit,
             )
@@ -61,9 +61,25 @@ class UserPostService(BaseService):
             ExceptionHandler(e)
 
     async def update_post(self, post_id: UUID, update_data: UserPost) -> UserPost:
-        return await self.update_object(
-            model=UserPost, object_id=post_id, data=update_data.dict(exclude_unset=True)
-        )
+        """
+        Обновляет информацию о посте пользователя.
+
+        :param post_id: Идентификатор поста.
+        :param update_data: Объект с обновленными данными поста.
+        :return: Обновленный объект поста.
+        :raises HTTPException: Возникает ошибка целостности данных или ошибка сервера.
+        """
+        try:
+            return await self.update_object(
+                model=UserPost, object_id=post_id, data=update_data.dict(exclude_unset=True)
+            )
+        except IntegrityError as e:
+            logger.error(f"Integrity error while updating post {post_id}: {e}")
+            raise HTTPException(status_code=400)
+        except Exception as e:
+            await self.db_session.rollback()
+            logger.error(f"Unexpected error while updating post {post_id}: {e}")
+            raise HTTPException(status_code=500, detail="Unexpected server error")
 
     async def delete_post(self, post_id: UUID) -> None:
         await self.delete_object_by_id(UserPost, post_id)
