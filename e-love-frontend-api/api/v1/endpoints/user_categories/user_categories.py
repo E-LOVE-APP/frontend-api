@@ -27,6 +27,9 @@ router = APIRouter(
     tags=["User Categories"],
 )
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
 
 @router.post(
     "/add",

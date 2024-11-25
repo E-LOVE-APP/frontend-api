@@ -78,7 +78,7 @@ class UserPostService(BaseService):
         except Exception as e:
             await self.db_session.rollback()
             logger.error(f"Unexpected error while updating post {post_id}: {e}")
-            raise HTTPException(status_code=500, detail="Unexpected server error")
+            ExceptionHandler(e)
 
     async def delete_post(self, post_id: UUID) -> None:
         try:
@@ -86,4 +86,4 @@ class UserPostService(BaseService):
         except Exception as e:
             await self.db_session.rollback()
             logger.error(f"Unexpected error while deleting post {post_id}: {e}")
-            raise HTTPException(status_code=500, detail="Unexpected server error")
+            ExceptionHandler(e)
