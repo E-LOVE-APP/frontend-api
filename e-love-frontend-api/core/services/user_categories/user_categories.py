@@ -1,3 +1,4 @@
+import logging
 from typing import List
 from uuid import UUID
 
@@ -11,8 +12,10 @@ from core.services.categories.categories import CategoriesService
 from core.services.users.users import UserService
 from exceptions.exception_handler import ExceptionHandler
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
-# TODO: полный рефактор
+
 class UserCategoriesAssociationService:
     """Сервис управления категориями пользователей."""
 
