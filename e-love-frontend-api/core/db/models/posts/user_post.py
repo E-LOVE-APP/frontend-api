@@ -13,10 +13,9 @@ class UserPost(BaseModel):
 
     post_title = Column(String(250), nullable=False)
     post_descr = Column(String(1000), nullable=False)
+    user_id = Column(ForeignKey("user.id"), nullable=False)
+    user = relationship("User", back_populates="posts")
 
     category = relationship(
         "Categories", secondary=posts_categories_table, back_populates="posts", lazy="selectin"
     )
-
-    user_id = Column(ForeignKey("user.id"), nullable=False)
-    user = relationship("User", back_populates="posts")
