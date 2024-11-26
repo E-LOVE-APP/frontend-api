@@ -39,6 +39,8 @@ class PostOutput(BaseModel):
 
     class Config:
         orm_mode = True
+        extra = "forbid"
+        from_attributes = True
 
 
 class PostsListResponse(BaseModel):
