@@ -5,15 +5,16 @@ from typing import List, Optional, Tuple
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from sqlalchemy import Float, and_, func, select
+from sqlalchemy import Float, and_, func, label, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import aliased, contains_eager, selectinload
 from sqlalchemy.sql import Select, Subquery
 from sqlalchemy.sql.elements import Label
 
 from core.db.models.categories.categories import Categories
 from core.db.models.intermediate_models.user_categories import user_categories_table
+from core.db.models.posts.user_post import UserPost
 from core.db.models.users.users import User
 from core.services.user_categories.user_categories import UserCategoriesAssociationService
 from core.services.user_interaction.user_interaction import UserInteractionService
@@ -190,6 +191,8 @@ class UsersMatchingService:
         limit: int = 10,
         next_token: Optional[str] = None,
         matching_type: MatchingType = MatchingType.STANDARD,
+        post_limit: int = 5,
+        categories_limit: int = 5,
     ) -> Tuple[List[User], int, Optional[str]]:
         """
         Возвращает список пользователей, соответствующих критериям совпадения по категориям.
@@ -199,6 +202,8 @@ class UsersMatchingService:
             - limit: Количество пользователей для возврата (по умолчанию 10).
             - next_token: Токен для пагинации (по умолчанию None).
             - matching_type: Тип матчинга, определяющий диапазон процента совпадения.
+            - post_limit: Количество постов для возврата (по умолчанию 5).
+            - categories_limit: Количество категорий для возврата (по умолчанию 5).
 
         Возвращает:
             - Tuple[List[User], int, Optional[str]]: Список пользователей, соответствующих критериям.
@@ -259,11 +264,127 @@ class UsersMatchingService:
             total = await get_total_count(db_session=self.db_session, main_query=main_query)
             next_token = paginated_response["next_token"]
 
+            user_ids = [user.id for user in matching_users]
+
+            """ 
+            Получаем посты по лимиту
+            Подзапрос присваивает каждому юзеру  порядковый номер row_number для его постов,
+            которые также осортированы по самой посследней дате создания.
+            
+            func.row_number().over(): Использует оконную функцию для нумерации строк в каждой группе
+            постов пользователя, а partition_by=UserPost.user_id разделяет записи по user_id, 
+            то есть для каждого пользователя отдельно. order_by сортирует в от новых к старым записям.
+            """
+
+            limited_posts_subq = (
+                select(
+                    UserPost.id,
+                    UserPost.post_title,
+                    UserPost.post_descr,
+                    UserPost.user_id,
+                    UserPost.created_at,
+                    label(
+                        "row_number",
+                        func.row_number().over(
+                            partition_by=UserPost.user_id, order_by=UserPost.created_at.desc()
+                        ),
+                    ),
+                )
+                .where(UserPost.user_id.in_(user_ids))
+                .subquery()
+            )
+            """
+            Выборка постов по лимиту. Из подзапроса выбираются только те посты, у которых row_number 
+            меньше или равен post_limit,чтобы ограничить количество постов для каждого пользователя
+            """
+            limited_posts = select(
+                limited_posts_subq.c.id,
+                limited_posts_subq.c.post_title,
+                limited_posts_subq.c.post_descr,
+                limited_posts_subq.c.user_id,
+                limited_posts_subq.c.created_at,
+            ).where(limited_posts_subq.c.row_number <= post_limit)
+
+            result_posts = await self.db_session.execute(limited_posts)
+            posts = result_posts.fetchall()
+
+            """
+            Здесь собираем посты по каждому пользователю в словарь posts_map, где ключом является user_id, 
+            а значением — список постов этого пользователя
+            """
+            posts_map = {}
+            for post in posts:
+                posts_map.setdefault(post.user_id, []).append(
+                    UserPost(
+                        id=post.id,
+                        post_title=post.post_title,
+                        post_descr=post.post_descr,
+                        user_id=post.user_id,
+                        created_at=post.created_at,
+                    )
+                )
+
+            """ 
+            Получаем категории по лимиту
+            Подзапрос присваивает каждому юзеру порядковый номер row_number для его категорий.
+            
+            func.row_number().over(): Использует оконную функцию для нумерации строк в каждой группе
+            категорий пользователя, а partition_by=user_categories_table.c.user_id разделяет записи по 
+            user_id, то есть для каждого пользователя отдельно. order_by сортирует в алфавитном порядке.
+            """
+            limited_categories_subq = (
+                select(
+                    Categories.id,
+                    Categories.category_name,
+                    Categories.category_descr,
+                    Categories.category_icon,  # Include this field
+                    user_categories_table.c.user_id,
+                    label(
+                        "row_number",
+                        func.row_number().over(
+                            partition_by=user_categories_table.c.user_id,
+                            order_by=Categories.category_name.asc(),
+                        ),
+                    ),
+                )
+                .join(user_categories_table, Categories.id == user_categories_table.c.category_id)
+                .where(user_categories_table.c.user_id.in_(user_ids))
+                .subquery()
+            )
+            """
+            Выборка категорий по лимиту. Из подзапроса выбираются только те категории, у которых row_number 
+            меньше или равен categories_limit, чтобы ограничить количество категорий для каждого пользователя
+            """
+            limited_categories = select(
+                limited_categories_subq.c.id,
+                limited_categories_subq.c.category_name,
+                limited_categories_subq.c.category_descr,
+                limited_categories_subq.c.category_icon,
+                limited_categories_subq.c.user_id,
+            ).where(limited_categories_subq.c.row_number <= categories_limit)
+
+            result_categories = await self.db_session.execute(limited_categories)
+            categories = result_categories.fetchall()
+
+            """
+            Здесь организуем категории по каждому пользователю в словарь categories_map, 
+            где ключом является user_id, а значением — список категорий этого пользователя
+            """
+            categories_map = {}
+            for category in categories:
+                categories_map.setdefault(category.user_id, []).append(
+                    Categories(
+                        id=category.id,
+                        category_name=category.category_name,
+                        category_descr=category.category_descr,
+                        category_icon=category.category_icon,
+                    )
+                )
+
+            # Присваиваем посты и категории пользователям из словарей ранее
             for user in matching_users:
-                # Cортируем посты по дате создания и оставляем только 2 последних
-                user.posts = sorted(user.posts, key=lambda post: post.created_at, reverse=True)[:2]
-                # Указать количество категорий
-                user.categories = user.categories[:1]
+                user.posts = posts_map.get(user.id, [])
+                user.categories = categories_map.get(user.id, [])
 
             return matching_users, total, next_token
 
