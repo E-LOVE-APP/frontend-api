@@ -33,3 +33,4 @@ async def create_wb_connection(websocket: WebSocket):
             await websocket.send_text({data})
     except WebSocketDisconnect:
         print("Client has been disconnected")
+        await websocket.close(code=1000, reason="Normal closure")
