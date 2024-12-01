@@ -1,35 +1,52 @@
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
-# TODO: Добавить валидаций
-"""Basic User gender model pydantic schema"""
+"""Pydantic схемы для гендера пользователя."""
 
 
 class UserGenderBase(BaseModel):
-    id: Optional[UUID] = Field(None, description="An id of the gender in UUID format")
-    gender_name: Optional[str] = Field(
-        None, max_length=50, min_length=2, description="Name of the gender"
-    )
+    """
+    Базовая схема гендера пользователя.
 
-    class Config:
-        orm_mode = True
+    Атрибуты:
+        id (Optional[UUID]): ID гендера в формате UUID.
+        gender_name (str): Название гендера.
+    """
+
+    id: Optional[UUID] = Field(None, description="ID of the gender in UUID format")
+    gender_name: str = Field(..., max_length=50, min_length=2, description="Name of the gender")
+
+    model_config = ConfigDict(from_attributes=True, extra="forbid")
 
 
 class UserGenderCreate(UserGenderBase):
+    """
+    Схема для создания нового гендера пользователя.
+    """
+
+    pass
+
+
+class UserGenderUpdate(BaseModel):
+    """
+    Схема для обновления гендера пользователя.
+
+    Атрибуты:
+        gender_name (Optional[str]): Название гендера.
+    """
+
     gender_name: Optional[str] = Field(
         None, max_length=50, min_length=2, description="Name of the gender"
     )
 
-
-class UserGenderUpdate(UserGenderBase):
-    gender_name: Optional[str] = Field(
-        None, max_length=50, min_length=2, description="Name of the gender"
-    )
+    model_config = ConfigDict(extra="forbid")
 
 
 class UserGenderOutput(UserGenderBase):
-    gender_name: Optional[str] = Field(
-        None, max_length=50, min_length=2, description="Name of the gender"
-    )
+    """
+    Схема для отображения гендера пользователя.
+    """
+
+    pass
