@@ -16,6 +16,7 @@ class PostBase(BaseModel):
 
     class Config:
         orm_mode = True
+        from_attributes = True
 
 
 class PostCreate(PostBase):
@@ -39,6 +40,7 @@ class PostOutput(BaseModel):
 
     class Config:
         orm_mode = True
+        from_attributes = True
 
 
 class PostsListResponse(BaseModel):

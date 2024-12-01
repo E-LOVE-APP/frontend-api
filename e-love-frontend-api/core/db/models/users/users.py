@@ -52,11 +52,13 @@ class User(BaseModel):
     status: Mapped["UserStatus"] = relationship("UserStatus", back_populates="users")
 
     # TODO: change the name to 'images'; Probably should also do it like M to M relationship
+    image: Mapped[List["UserImages"]] = relationship("UserImages", back_populates="user")
 
-    image: Mapped["UserImages"] = relationship("UserImages", back_populates="user")
+    posts: Mapped[List["UserPost"]] = relationship(
+        "UserPost", back_populates="user", lazy="selectin"
+    )
 
-    posts: Mapped["UserPost"] = relationship("UserPost", back_populates="user", lazy="selectin")
-
+    # TODO: delete AuditLogs table (UC-35)
     logs: Mapped["AuditLogs"] = relationship("AuditLogs", back_populates="user")
 
     # Many To Many relationships

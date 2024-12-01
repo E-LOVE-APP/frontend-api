@@ -1,9 +1,11 @@
 from typing import List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, validator
 
 from core.schemas.users_categories.users_categories_schema import CategoryOutput
+from core.schemas.posts.user_post_schema import PostOutput
+from core.db.models.posts.user_post import UserPost
 
 """Pydantic schemas for Users."""
 
@@ -17,6 +19,7 @@ class UserBase(BaseModel):
 
     class Config:
         orm_mode = True
+        from_attributes = True
         extra = "forbid"
 
 
@@ -51,11 +54,18 @@ class UserOutput(UserBase):
     id: UUID = Field(..., description="ID of the user in UUID format")
     user_descr: Optional[str] = Field(None, max_length=500, description="Description of the user")
     categories: Optional[List[CategoryOutput]] = None
+    posts: Optional[List[PostOutput]] = None
 
     class Config:
         orm_mode = True
         extra = "forbid"
         from_attributes = True
+
+    @validator("posts", pre=True, each_item=True)
+    def convert_posts(cls, v):
+        if isinstance(v, UserPost):
+            return PostOutput.from_orm(v)
+        return v
 
 
 class UsersListResponse(BaseModel):
