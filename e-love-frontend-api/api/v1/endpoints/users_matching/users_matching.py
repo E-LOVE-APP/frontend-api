@@ -91,10 +91,7 @@ async def get_matching_users_list(
     # Сначала этот код отрезает лишние атрибуты из модели UserOutput, которые не входят в pydantic-схему
     # Потом туда добавляются CategoryOutput сущности категорий.
     # TODO: refactor
-    matching_users_output = [
-        UserOutput(**{k: v for k, v in user.__dict__.items() if k in UserOutput.__fields__})
-        for user in matching_users
-    ]
+    matching_users_output = [UserOutput.from_orm(user) for user in matching_users]
 
     return UsersMatchingListResponse(
         matching_users=matching_users_output, total=total, next_token=next_token
