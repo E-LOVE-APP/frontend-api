@@ -2,7 +2,7 @@ from enum import Enum
 from typing import List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 """Pydantic схемы для взаимодействий пользователей."""
 

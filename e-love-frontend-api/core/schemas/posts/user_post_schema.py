@@ -1,10 +1,8 @@
-from typing import List, Optional
-
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 """Pydantic схемы для постов пользователя."""
 

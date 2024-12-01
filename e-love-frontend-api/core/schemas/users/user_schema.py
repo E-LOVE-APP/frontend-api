@@ -1,12 +1,12 @@
 from typing import List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field, validator, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, validator
 
-from core.schemas.users_categories.users_categories_schema import CategoryOutput
+from core.db.models.posts.user_post import UserPost
 from core.schemas.posts.user_post_schema import PostOutput
 from core.schemas.user_gender.user_gender_schema import UserGenderOutput
-from core.db.models.posts.user_post import UserPost
+from core.schemas.users_categories.users_categories_schema import CategoryOutput
 
 """Pydantic схемы для пользователей."""
 
@@ -77,7 +77,7 @@ class UserOutput(UserBase):
 
     id: UUID = Field(..., description="ID of the user in UUID format")
     user_descr: Optional[str] = Field(None, max_length=500, description="Description of the user")
-    gender: Optional[UserGenderOutput] = Field(None, description="User gender")
+    genders: Optional[List[UserGenderOutput]] = Field(None, description="User gender")
     categories: Optional[List[CategoryOutput]] = Field(
         None, description="List of user's categories"
     )
