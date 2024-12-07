@@ -1,36 +1,24 @@
-from fastapi import Depends, FastAPI, WebSocket, WebSocketDisconnect
-
-from auth.security import authenticator
-
-router = APIRouter(
-    prefix="/chat",
-)
+from typing import Dict
+from fastapi import WebSocket
 
 
-@router.websocket(
-    "/",
-    # response_model=
-    response={
-        1000: {
-            "description": "Message has been delivered successfully",
-            # "model": MessageOutput,
-        },
-        1011: {
-            "description": "Internal server error.",
-            # "model": WebSocketInternalError,
-        },
-    },
-    tags=["Messages", "Chat"],
-    dependencies=[
-        Depends(authenticator.authenticate),
-    ],
-)
-async def create_wb_connection(websocket: WebSocket):
-    await websocket.accept()
-    try:
-        while True:
-            data = await websocket.receive_text()
-            await websocket.send_text({data})
-    except WebSocketDisconnect:
-        print("Client has been disconnected")
-        await websocket.close(code=1000, reason="Normal closure")
+# TODO: refactor. Add more types, docstrings.
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: Dict[int, WebSocket] = {}
+
+    async def connect(self, websocket: WebSocket, user_id: int):
+        await websocket.accept()
+        self.active_connections[user_id] = websocket
+
+    def disconnect(self, user_id: int):
+        self.active_connections.pop(user_id, None)
+
+    async def send_personal_message(self, message: str, user_id: int):
+        ws_user_connection = self.active_connections.get(user_id)
+        if ws_user_connection:
+            await ws_user_connection.send_text(message)
+
+    async def broadcast(self, message: str):
+        for connection in self.active_connections.values():
+            await connection.send_text(message)
