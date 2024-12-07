@@ -27,6 +27,7 @@ services:
       - "8080:8000"
     env_file:
       - .env
+      - ./docker/chat.env
     volumes:
       - type: bind
         source: ./api
