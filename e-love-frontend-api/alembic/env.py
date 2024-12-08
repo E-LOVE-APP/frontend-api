@@ -29,7 +29,6 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Создаем синхронный URL для базы данных (Alembic по стандарту работает с БД в синхронном режиме, к сожалению)
 SYNC_DATABASE_URL = re.sub(r"\+asyncmy", "+pymysql", DATABASE_URL)
 
 config.set_main_option("sqlalchemy.url", SYNC_DATABASE_URL)

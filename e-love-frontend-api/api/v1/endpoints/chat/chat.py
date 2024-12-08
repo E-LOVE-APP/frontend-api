@@ -31,14 +31,11 @@ async def connect_to_chat_service():
                 data = json.loads(msg.data)
                 action = data.get("action")
                 if action == "message_saved":
-                    # Обработка подтверждения сохранения сообщения
-                    # Можно сохранить ID сообщения или логировать
                     pass
                 elif action == "receive_message":
                     sender_id = data["data"].get("sender_id")
                     recipient_id = data["data"].get("recipient_id")
                     content = data["data"].get("content")
-                    # Найдите WebSocket клиента для recipient_id и отправьте сообщение
                     recipient_ws = manager.get_connection(recipient_id)
                     if recipient_ws:
                         await recipient_ws.send_text(f"From {sender_id}: {content}")
