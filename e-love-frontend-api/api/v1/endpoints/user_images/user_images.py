@@ -9,6 +9,7 @@ from configuration.database import get_db_session
 from core.schemas.errors.httperror import HTTPError
 from core.schemas.user_images.user_images_schema import (
     UserImagesCreate,
+    UserImagesListResponse,
     UserImagesOutput,
     UserImagesUpdate,
 )
@@ -89,11 +90,11 @@ async def get_image_by_id(
 
 @router.get(
     "/",
-    response_model=List[UserImagesOutput],
+    response_model=UserImagesListResponse,
     responses={
         200: {
             "description": "Get user images list.",
-            "model": List[UserImagesOutput],
+            "model": UserImagesListResponse,
         },
         500: {
             "description": "Server error.",
@@ -108,14 +109,46 @@ async def get_image_by_id(
     ],
 )
 async def get_images_list(
+    limit: int = 10,
+    next_token: Optional[str] = None,
+    db: AsyncSession = Depends(get_db_session),
+):
+
+    user_image_service = UserImageService(db)
+    return await user_image_service.get_images_list(limit=limit, next_token=next_token)
+
+
+@router.get(
+    "/user/{user_id}",
+    response_model=List[UserImagesOutput],
+    responses={
+        200: {
+            "description": "Get all user images by user ID.",
+            "model": List[UserImagesOutput],
+        },
+        500: {
+            "description": "Server error.",
+            "model": HTTPError,
+        },
+    },
+    tags=["User images", "Get user images by user ID"],
+    dependencies=[
+        Depends(get_db_session),
+        Depends(authenticator.authenticate),
+    ],
+)
+async def get_user_images_list(
+    user_id: str,
     db: AsyncSession = Depends(get_db_session),
 ):
     """
-    Get a list of user images (without pagination, it's not needed here).
+    Get all user images for a specific user ID.
 
+    - **user_id**: UUID of the user
     """
     user_image_service = UserImageService(db)
-    return await user_image_service.get_images_list()
+    images = await user_image_service.get_user_images_list(user_id)
+    return images
 
 
 @router.put(
