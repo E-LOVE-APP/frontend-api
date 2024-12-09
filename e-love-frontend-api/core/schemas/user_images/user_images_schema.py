@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 class UserImagesBase(BaseModel):
     id: Optional[UUID] = Field(None, description="An id of the user image in UUID format")
-    img_url: Optional[str] = Field(
+    img_url: Optional[UUID] = Field(
         None, max_length=240, min_length=2, description="Decoded img from user"
     )
 

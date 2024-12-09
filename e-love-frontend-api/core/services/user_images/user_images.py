@@ -89,7 +89,7 @@ class UserImageService(BaseService):
         """
         try:
 
-            base_query = select(UserImages).where(UserImages.user_id == str(user_id))
+            base_query = select(UserImages).where(UserImages.user_id == user_id)
 
             response = await self.paginator.paginate_query(
                 base_query=base_query,
