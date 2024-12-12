@@ -8,9 +8,17 @@ from ..base import BaseModel
 
 
 class UserImages(BaseModel):
+    """
+    SQLAlchemy model for storing user images.
+
+    Attributes:
+        img_url: URL of the user's image.
+        user_id: ID of the user to whom the image belongs.
+        user: Relationship to the User model.
+    """
+
     __tablename__ = "user_images"
 
-    decoded_img: Column[str] = Column(String(124), nullable=False)
-
+    img_url: Column[str] = Column(String(240), nullable=False)
     user_id: Column[UUID] = Column(ForeignKey("user.id"), nullable=False)
-    user: Mapped[List["User"]] = relationship("User", back_populates="image", uselist=True)
+    user: Mapped[List["User"]] = relationship("User", back_populates="images", uselist=True)
