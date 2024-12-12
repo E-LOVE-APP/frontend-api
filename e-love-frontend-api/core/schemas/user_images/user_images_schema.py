@@ -1,46 +1,74 @@
 from typing import List, Optional
 from uuid import UUID
-
-from pydantic import BaseModel, Field
-
-# TODO: Добавить валидаций
-"""Basic User Images model pydantic schema"""
+from pydantic import BaseModel, Field, HttpUrl
 
 
 class UserImagesBase(BaseModel):
-    id: Optional[UUID] = Field(None, description="An id of the user image in UUID format")
-    img_url: Optional[UUID] = Field(
-        None, max_length=240, min_length=2, description="Decoded img from user"
-    )
+    """
+    Base Pydantic schema for user images, including shared fields.
+
+    Attributes:
+        id: Unique identifier of the user image in UUID format.
+        img_url: URL of the user's image.
+    """
+
+    id: Optional[UUID] = Field(None, description="An ID of the user image in UUID format")
+    img_url: Optional[HttpUrl] = Field(None, description="URL of the user's image")
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserImagesCreate(UserImagesBase):
-    img_url: Optional[str] = Field(
-        None, max_length=240, min_length=2, description="Decoded img from user"
-    )
+    """
+    Pydantic schema for creating a new user image.
+
+    Attributes:
+        img_url: URL of the new user's image.
+        user_id: ID of the user to whom the image belongs.
+    """
+
+    img_url: HttpUrl = Field(..., description="URL of the user's image")
     user_id: UUID = Field(..., description="ID of the user")
 
 
 class UserImagesUpdate(UserImagesBase):
-    img_url: Optional[str] = Field(
-        None, max_length=240, min_length=2, description="Decoded img from user"
-    )
+    """
+    Pydantic schema for updating an existing user image.
+
+    Attributes:
+        img_url: URL of the user's image (optional for updates).
+    """
+
+    img_url: Optional[HttpUrl] = Field(None, description="URL of the user's image")
 
 
 class UserImagesOutput(UserImagesBase):
-    img_url: Optional[str] = Field(
-        None, max_length=240, min_length=2, description="Decoded img from user"
-    )
+    """
+    Pydantic schema for outputting user image data.
+
+    Attributes:
+        img_url: URL of the user's image.
+        user_id: ID of the user to whom the image belongs.
+    """
+
+    img_url: Optional[HttpUrl] = Field(None, description="URL of the user's image")
     user_id: str = Field(..., description="ID of the user")
 
 
 class UserImagesListResponse(BaseModel):
+    """
+    Pydantic schema for paginated responses of user images.
+
+    Attributes:
+        items: List of user images.
+        has_next: Boolean indicating if there are more images to fetch.
+        next_token: Token for fetching the next page of images.
+    """
+
     items: List[UserImagesOutput]
     has_next: bool
     next_token: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True

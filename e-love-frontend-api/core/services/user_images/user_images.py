@@ -98,9 +98,7 @@ class UserImageService(BaseService):
                 limit=limit,
             )
 
-            # Нужно получить список изображений из response
-            items = response.get("items", [])
-            return items
+            return response.get("items", [])
         except Exception as e:
             await self.db_session.rollback()
             logger.error(f"Error getting images list for user {user_id}: {e}")

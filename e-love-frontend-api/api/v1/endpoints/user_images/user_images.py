@@ -105,7 +105,7 @@ async def get_image_by_id(
     dependencies=[
         Depends(get_db_session),
         Depends(authenticator.authenticate),
-        # Depends(authenticator.require_role("Admin")),
+        Depends(authenticator.require_role("Admin")),
     ],
 )
 async def get_images_list(
