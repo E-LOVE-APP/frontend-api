@@ -55,6 +55,7 @@ class User(BaseModel):
 
     posts: Mapped["UserPost"] = relationship("UserPost", back_populates="user", lazy="selectin")
 
+    # TODO: delete AuditLogs table (UC-35)
     logs: Mapped["AuditLogs"] = relationship("AuditLogs", back_populates="user")
 
     # Many To Many relationships

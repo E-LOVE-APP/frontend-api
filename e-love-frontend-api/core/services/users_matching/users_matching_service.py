@@ -169,6 +169,7 @@ class UsersMatchingService:
         """
         min_percentage, max_percentage = MATCHING_PERCENTAGE_RANGES[matching_type]
 
+        # TODO: Оптимизировать (возможно) , добавляя ограничение на кол-во возвращаемых постов и категорий. (будет видно в будущем)
         base_query = (
             select(User)
             .join(potential_users_subq, User.id == potential_users_subq.c.user_id)
