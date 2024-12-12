@@ -138,7 +138,7 @@ async def get_images_list(
     ],
 )
 async def get_user_images_list(
-    user_id: str,
+    user_id: UUID,
     db: AsyncSession = Depends(get_db_session),
 ):
     """
@@ -147,8 +147,7 @@ async def get_user_images_list(
     - **user_id**: UUID of the user
     """
     user_image_service = UserImageService(db)
-    images = await user_image_service.get_user_images_list(user_id)
-    return images
+    return await user_image_service.get_user_images_list(user_id)
 
 
 @router.put(

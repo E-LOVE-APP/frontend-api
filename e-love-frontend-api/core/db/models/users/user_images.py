@@ -21,4 +21,4 @@ class UserImages(BaseModel):
 
     img_url: Column[str] = Column(String(240), nullable=False)
     user_id: Column[UUID] = Column(ForeignKey("user.id"), nullable=False)
-    user: Mapped[List["User"]] = relationship("User", back_populates="image", uselist=True)
+    user: Mapped[List["User"]] = relationship("User", back_populates="images", uselist=True)
