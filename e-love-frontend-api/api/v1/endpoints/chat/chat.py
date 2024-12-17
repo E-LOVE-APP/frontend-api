@@ -1,8 +1,9 @@
 import asyncio
 import aiohttp
+from uuid import UUID
 
 import json
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, status
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, status, HTTPException
 from configuration.database import get_db_session
 from api.conn_manager.conn_manager import ConnectionManager
 from auth.security import authenticator
@@ -19,10 +20,11 @@ chat_service_ws = None
 # TODO: refactor this file
 
 
-async def connect_to_chat_service():
+async def connect_to_chat_service(conversation_id: UUID):
     global chat_service_ws
+    ws_url = f"ws://chat-microservice:8001/chat/{conversation_id}"
     session = aiohttp.ClientSession()
-    chat_service_ws = await session.ws_connect(CHAT_SERVICE_WS_URL)
+    chat_service_ws = await session.ws_connect(ws_url)
     await chat_service_ws.send_json({"action": "authenticate", "token": CHAT_SERVICE_AUTH_TOKEN})
 
     async def receive_from_chat_service():
@@ -31,72 +33,66 @@ async def connect_to_chat_service():
                 data = json.loads(msg.data)
                 action = data.get("action")
                 if action == "message_saved":
-                    pass
-                elif action == "receive_message":
-                    sender_id = data["data"].get("sender_id")
-                    recipient_id = data["data"].get("recipient_id")
-                    content = data["data"].get("content")
+                    sender_id = data["data"]["sender_id"]
+                    recipient_id = data["data"]["recipient_id"]
+                    content = data["data"]["content"]
+
                     recipient_ws = manager.get_connection(recipient_id)
                     if recipient_ws:
                         await recipient_ws.send_text(f"From {sender_id}: {content}")
             elif msg.type == aiohttp.WSMsgType.ERROR:
-                # add loggining
                 break
 
     asyncio.create_task(receive_from_chat_service())
 
 
+@router.post("/conversation")
+async def create_chat_conversation(
+    other_user_id: UUID, token: str = Depends(authenticator.authenticate)
+):
+    user_id = token["sub"]
+    async with aiohttp.ClientSession() as session:
+        url = "http://localhost:8001/conversations"
+        payload = {"user_first_id": srt(user_id), "user_second_id": str(other_user_id)}
+        async with session.post(url, json=payload) as response:
+            if response.status != 200:
+                raise HTTPException(status_code=response.status, detail=await response.text())
+            conversation_data = response.json()
+    return conversation_data
+
+
 @router.websocket("/chat")
 async def websocket_endpoint(
-    websocket: WebSocket, token: str = Depends(authenticator.authenticate)
+    websocket: WebSocket,
+    token: str = Depends(authenticator.authenticate),
+    conversation_id: UUID = Query(...),
 ):
-    """
-    WebSocket-эндпоинт для чата, принимающий соединения от Frontend и проксирующий их к Chat-Microservice.
-    """
-    try:
-        payload = token
-        user_id = payload.get("sub")
-        if not user_id:
-            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-            return
-    except Exception:
-        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-        return
-
-    # Подключение клиента
+    user_id = token["sub"]
     await manager.connect(websocket, user_id)
 
-    # Убедитесь, что соединение с Chat-Microservice установлено
-    if chat_service_ws is None or chat_service_ws.closed:
-        await connect_to_chat_service()
+    await connect_to_chat_service(conversation_id)
 
     try:
         while True:
             data = await websocket.receive_text()
-            try:
-                message = json.loads(data)
-                recipient_id = message.get("recipient_id")
-                content = message.get("content")
-                if not recipient_id or not content:
-                    await websocket.send_text("Invalid message format.")
-                    continue
-                # Отправка сообщения в Chat-Microservice через WebSocket
-                await chat_service_ws.send_json(
-                    {
-                        "action": "send_message",
-                        "data": {
-                            "sender_id": user_id,
-                            "recipient_id": recipient_id,
-                            "content": content,
-                        },
-                    }
-                )
-                # Отправка подтверждения клиенту
-                await websocket.send_text("Message sent successfully.")
-            except json.JSONDecodeError:
-                await websocket.send_text("Invalid JSON format.")
+            message = json.loads(data)
+            recipient_id = message.get("recipient_id")
+            content = message.get("content")
+
+            if not recipient_id or not content:
+                await websocket.send_text("Invalid message format.")
+                continue
+
+            await chat_service_ws.send_json(
+                {
+                    "action": "send_message",
+                    "data": {
+                        "sender_id": user_id,
+                        "recipient_id": str(recipient_id),
+                        "content": content,
+                    },
+                }
+            )
+            await websocket.send_text("Message sent successfully.")
     except WebSocketDisconnect:
-        manager.disconnect(user_id)
-    except Exception as e:
-        await websocket.close(code=status.WS_1011_INTERNAL_ERROR)
         manager.disconnect(user_id)
