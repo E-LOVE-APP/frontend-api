@@ -14,7 +14,9 @@ from core.schemas.chat.conversation.conversation_schema import ConversationBase
 router = APIRouter()
 manager = ConnectionManager()
 
-CHAT_SERVICE_WS_URL = os.getenv("CHAT_SERVICE_WS_URL")
+# TODO: make a condition here where we want to pick a variable depends on prod/local env (in the future)
+CHAT_SERVICE_CREATE_CONVERSATION_URL_LOCAL = os.getenv("CHAT_SERVICE_CREATE_CONVERSATION_URL_LOCAL")
+CHAT_SERVICE_CONNECT_URL_LOCAL = os.getenv("CHAT_SERVICE_CONNECT_URL_LOCAL")
 CHAT_SERVICE_AUTH_TOKEN = os.getenv("CHAT_SERVICE_AUTH_TOKEN")
 
 chat_service_ws = None
@@ -22,9 +24,11 @@ chat_service_ws = None
 # TODO: refactor this file
 
 
+# TODO: add local/prod conditional connection
+# TODO: add try/catch block
 async def connect_to_chat_service(conversation_id: UUID):
     global chat_service_ws
-    ws_url = f"ws://chat-microservice:8001/chat/{conversation_id}"
+    ws_url = CHAT_SERVICE_CONNECT_URL_LOCAL
     session = aiohttp.ClientSession()
     chat_service_ws = await session.ws_connect(ws_url)
     await chat_service_ws.send_json({"action": "authenticate", "token": CHAT_SERVICE_AUTH_TOKEN})
@@ -59,7 +63,7 @@ async def create_chat_conversation(
     other_user_id = request_data.other_user_id
     # TODO: check this syntax
     async with aiohttp.ClientSession() as session:
-        url = "http://e-love-chat-service-api:8081/chat/conversations"
+        url = CHAT_SERVICE_CREATE_CONVERSATION_URL_LOCAL
         payload = {"user_first_id": str(user_id), "user_second_id": str(other_user_id)}
         async with session.post(url, json=payload) as response:
             if response.status != 200:
