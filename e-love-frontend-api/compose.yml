@@ -1,11 +1,11 @@
 services:
-  db:
+  fe_api_db:
     image: mysql:8.0
-    container_name: e-love-db
+    container_name: e-love-fe-api-db
     env_file:
       - ./docker/db-app/db.env
     volumes:
-      - db_data:/var/lib/mysql
+      - fe_api_db_data:/var/lib/mysql
     ports:
       - "3306:3306"
     networks:
@@ -56,7 +56,7 @@ services:
     networks:
       - e-love-network
     depends_on:
-      db:
+      fe_api_db:
         condition: service_healthy
 
 networks:
@@ -64,5 +64,5 @@ networks:
     external: true
 
 volumes:
-  db_data:
+  fe_api_db_data:
     driver: local

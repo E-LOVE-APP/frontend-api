@@ -1,13 +1,15 @@
 import asyncio
-import aiohttp
+import json
+import os
 from uuid import UUID
 
-import json
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, status, HTTPException
-from configuration.database import get_db_session
+import aiohttp
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, status
+
 from api.conn_manager.conn_manager import ConnectionManager
 from auth.security import authenticator
-
+from configuration.database import get_db_session
+from core.schemas.chat.conversation.conversation_schema import ConversationBase
 
 router = APIRouter()
 manager = ConnectionManager()
@@ -46,26 +48,31 @@ async def connect_to_chat_service(conversation_id: UUID):
     asyncio.create_task(receive_from_chat_service())
 
 
+# TODO: add correct error-handling
 @router.post("/conversation")
 async def create_chat_conversation(
-    other_user_id: UUID, token: str = Depends(authenticator.authenticate)
+    request_data: ConversationBase,
+    # other_user_id: UUID,
+    # token: str = Depends(authenticator.authenticate)
 ):
-    user_id = token["sub"]
+    user_id = "00cebe39-9159-500a-a4d3-efb9932ec33a"
+    other_user_id = request_data.other_user_id
+    # TODO: check this syntax
     async with aiohttp.ClientSession() as session:
-        url = "http://localhost:8001/conversations"
-        payload = {"user_first_id": srt(user_id), "user_second_id": str(other_user_id)}
+        url = "http://e-love-chat-service-api:8081/chat/conversations"
+        payload = {"user_first_id": str(user_id), "user_second_id": str(other_user_id)}
         async with session.post(url, json=payload) as response:
             if response.status != 200:
                 raise HTTPException(status_code=response.status, detail=await response.text())
-            conversation_data = response.json()
+            conversation_data = await response.json()
     return conversation_data
 
 
 @router.websocket("/chat")
 async def websocket_endpoint(
     websocket: WebSocket,
+    conversation_id: UUID,
     token: str = Depends(authenticator.authenticate),
-    conversation_id: UUID = Query(...),
 ):
     user_id = token["sub"]
     await manager.connect(websocket, user_id)

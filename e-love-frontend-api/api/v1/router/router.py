@@ -4,6 +4,7 @@
 from fastapi import APIRouter
 
 from api.v1.endpoints.categories.categories import router as categories_router
+from api.v1.endpoints.chat.chat import router as chat_router
 from api.v1.endpoints.user_categories.user_categories import router as user_categories_router
 from api.v1.endpoints.user_gender.user_gender import router as user_gender_router
 from api.v1.endpoints.user_post.user_post import router as user_post_router
@@ -13,7 +14,6 @@ from api.v1.endpoints.user_role_association.user_roles_association import (
 )
 from api.v1.endpoints.user_status.user_status import router as user_status_router
 from api.v1.endpoints.users.users import router as users_router
-from api.v1.endpoints.chat.chat import router as chat_router
 
 api_router = APIRouter()
 api_router.include_router(users_router, prefix="/api/v1", tags=["Users"])
