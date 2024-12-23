@@ -11,7 +11,6 @@ from configuration.database import Base
 class BaseModel(Base):
     __abstract__ = True
 
-    # TODO: рассмотреть вопрос по касту этого Column до binary-id в целях экономии места в БД ?
     id = Column(
         String(36),
         primary_key=True,

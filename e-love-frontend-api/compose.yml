@@ -1,13 +1,15 @@
 services:
-  db:
+  fe_api_db:
     image: mysql:8.0
-    container_name: e-love-db
+    container_name: e-love-fe-api-db
     env_file:
       - ./docker/db-app/db.env
     volumes:
-      - db_data:/var/lib/mysql
+      - fe_api_db_data:/var/lib/mysql
     ports:
       - "3306:3306"
+    networks:
+      - e-love-network
     healthcheck:
       test: "mysqladmin ping -h localhost"
       interval: 10s
@@ -25,6 +27,7 @@ services:
       - "8080:8000"
     env_file:
       - .env
+      - ./docker/chat.env
     volumes:
       - type: bind
         source: ./api
@@ -50,10 +53,16 @@ services:
       - type: bind
         source: ./main.py
         target: /app/main.py
+    networks:
+      - e-love-network
     depends_on:
-      db:
+      fe_api_db:
         condition: service_healthy
 
+networks:
+  e-love-network:
+    external: true
+
 volumes:
-  db_data:
+  fe_api_db_data:
     driver: local
