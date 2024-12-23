@@ -23,7 +23,7 @@ chat_service_ws = None
 
 
 # TODO: add correct error-handling
-@router.post("/v1/chat/conversation")
+@router.post("conversation")
 async def create_chat_conversation(
     request_data: ConversationBase,
     # other_user_id: UUID,
@@ -43,7 +43,7 @@ async def create_chat_conversation(
 
 
 # TODO: add auth0 integration (check user_token)
-@router.websocket("/chat/{conversation_id}")
+@router.websocket("{conversation_id}")
 async def websocket_chat_endpoint(
     websocket: WebSocket,
     conversation_id: UUID,
