@@ -6,13 +6,13 @@ from uuid import UUID
 import aiohttp
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, status
 
-from api.conn_manager.conn_manager import ConnectionManager
 from auth.security import authenticator
 from configuration.database import get_db_session
 from core.schemas.chat.conversation.conversation_schema import ConversationBase
+from utils.chat.connect_to_chat_service import connect_to_chat_service
+from utils.chat.listen_chat_service import listen_chat_service
 
 router = APIRouter()
-manager = ConnectionManager()
 
 # TODO: make a condition here where we want to pick a variable depends on prod/local env (in the future)
 CHAT_SERVICE_CREATE_CONVERSATION_URL_LOCAL = os.getenv("CHAT_SERVICE_CREATE_CONVERSATION_URL_LOCAL")
@@ -21,39 +21,9 @@ CHAT_SERVICE_AUTH_TOKEN = os.getenv("CHAT_SERVICE_AUTH_TOKEN")
 
 chat_service_ws = None
 
-# TODO: refactor this file
-
-
-# TODO: add local/prod conditional connection
-# TODO: add try/catch block
-async def connect_to_chat_service(conversation_id: UUID):
-    global chat_service_ws
-    ws_url = CHAT_SERVICE_CONNECT_URL_LOCAL
-    session = aiohttp.ClientSession()
-    chat_service_ws = await session.ws_connect(ws_url)
-    await chat_service_ws.send_json({"action": "authenticate", "token": CHAT_SERVICE_AUTH_TOKEN})
-
-    async def receive_from_chat_service():
-        async for msg in chat_service_ws:
-            if msg.type == aiohttp.WSMsgType.TEXT:
-                data = json.loads(msg.data)
-                action = data.get("action")
-                if action == "message_saved":
-                    sender_id = data["data"]["sender_id"]
-                    recipient_id = data["data"]["recipient_id"]
-                    content = data["data"]["content"]
-
-                    recipient_ws = manager.get_connection(recipient_id)
-                    if recipient_ws:
-                        await recipient_ws.send_text(f"From {sender_id}: {content}")
-            elif msg.type == aiohttp.WSMsgType.ERROR:
-                break
-
-    asyncio.create_task(receive_from_chat_service())
-
 
 # TODO: add correct error-handling
-@router.post("/conversation")
+@router.post("/v1/chat/conversation")
 async def create_chat_conversation(
     request_data: ConversationBase,
     # other_user_id: UUID,
@@ -72,38 +42,36 @@ async def create_chat_conversation(
     return conversation_data
 
 
-@router.websocket("/chat")
-async def websocket_endpoint(
+# TODO: add auth0 integration (check user_token)
+@router.websocket("/chat/{conversation_id}")
+async def websocket_chat_endpoint(
     websocket: WebSocket,
     conversation_id: UUID,
-    token: str = Depends(authenticator.authenticate),
+    # token: str = Depends(authenticator.authenticate),
 ):
-    user_id = token["sub"]
-    await manager.connect(websocket, user_id)
+    """
+    WebSocket endpoint that proxies chat messages between Frontend and Chat-Microservice.
+    Requires a valid token and a conversation_id in query params.
+    """
 
-    await connect_to_chat_service(conversation_id)
+    # user_payload = token
+    # user_id = user_payload["sub"]
+
+    # Accept client-connection
+
+    await websocket.accept()
+
+    chat_service_ws = await connect_to_chat_service(str(conversation_id))
+
+    asyncio.create_task(listen_chat_service(chat_service_ws, websocket))
 
     try:
         while True:
-            data = await websocket.receive_text()
-            message = json.loads(data)
-            recipient_id = message.get("recipient_id")
-            content = message.get("content")
-
-            if not recipient_id or not content:
-                await websocket.send_text("Invalid message format.")
-                continue
-
-            await chat_service_ws.send_json(
-                {
-                    "action": "send_message",
-                    "data": {
-                        "sender_id": user_id,
-                        "recipient_id": str(recipient_id),
-                        "content": content,
-                    },
-                }
-            )
-            await websocket.send_text("Message sent successfully.")
+            client_msg = await websocket.receive_json()
+            await chat_service_ws.send_json(client_msg)
     except WebSocketDisconnect:
-        manager.disconnect(user_id)
+        pass
+    except Exception as e:
+        pass
+    finally:
+        await chat_service_ws.close()

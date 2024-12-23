@@ -26,7 +26,7 @@ api_router.include_router(categories_router, prefix="/api/v1", tags=["Categories
 api_router.include_router(user_status_router, prefix="/api/v1", tags=["User Status"])
 api_router.include_router(user_post_router, prefix="/api/v1", tags=["User Post"])
 api_router.include_router(user_categories_router, prefix="/api/v1", tags=["User Categories"])
-api_router.include_router(chat_router, prefix="/v1", tags=["Users chat"])
+api_router.include_router(chat_router, tags=["Users chat"])
 
 # ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⠿⠟⢿⣻⣟⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢻⡝⠬⢋⣤⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⢋⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣦⣄⡀⠀⠀⠀⠀⢀⠢⠑⡌⠲⣉
 # ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⢟⣫⣵⣶⣶⣿⣿⣿⣿⣟⡳⠶⣶⣬⣝⠻⣿⣿⢿⡿⠟⠿⡹⠓⢎⣡⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⣰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡀⠀⠀⠀⠁⢀⠃⡐
