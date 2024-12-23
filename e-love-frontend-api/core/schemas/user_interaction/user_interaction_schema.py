@@ -2,68 +2,89 @@ from enum import Enum
 from typing import List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
-"""Pydantic schemas for User Interactions."""
+"""Pydantic схемы для взаимодействий пользователей."""
 
 
-# TODO: переместить в UTILS;
 class InteractionType(str, Enum):
-    """Enumeration of possible interaction types."""
+    """Перечисление возможных типов взаимодействий."""
 
     MATCH = "MATCH"
     REJECT = "REJECT"
 
 
 class UserInteractionBase(BaseModel):
-    """Base model for user interactions with common fields."""
+    """
+    Базовая модель взаимодействия пользователей с общими полями.
+
+    Атрибуты:
+        interaction_type (InteractionType): Тип взаимодействия (MATCH или REJECT).
+        user_id (UUID): ID пользователя, инициировавшего взаимодействие.
+        target_user_id (UUID): ID целевого пользователя.
+    """
 
     interaction_type: InteractionType = Field(
-        ..., description="Type of interaction (match or reject)"
+        ..., description="Type of interaction (MATCH or REJECT)"
     )
     user_id: UUID = Field(..., description="ID of the current user that triggered the interaction")
     target_user_id: UUID = Field(
         ..., description="ID of the target user the interaction is aimed at"
     )
 
-    class Config:
-        orm_mode = True
-        extra = "forbid"
+    model_config = ConfigDict(from_attributes=True, extra="forbid")
 
 
 class UserInteractionCreate(UserInteractionBase):
-    """Schema for creating a new user interaction."""
+    """
+    Схема для создания нового взаимодействия пользователей.
+    """
 
-    pass  # All fields are inherited and required.
+    pass
 
 
 class UserInteractionUpdate(BaseModel):
-    """Schema for updating an existing user interaction."""
+    """
+    Схема для обновления существующего взаимодействия пользователей.
+
+    Атрибуты:
+        interaction_type (Optional[InteractionType]): Обновленный тип взаимодействия.
+    """
 
     interaction_type: Optional[InteractionType] = Field(
-        None, description="Updated type of interaction (match or reject)"
+        None, description="Updated type of interaction (MATCH or REJECT)"
     )
 
-    class Config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
 
 
 class UserInteractionOutput(UserInteractionBase):
-    """Schema for displaying user interaction data."""
+    """
+    Схема для отображения данных взаимодействия пользователей.
+
+    Атрибуты:
+        id (UUID): ID взаимодействия пользователей в формате UUID.
+    """
 
     id: UUID = Field(..., description="ID of the user-interaction entity in UUID format")
 
-    class Config:
-        orm_mode = True
-        extra = "forbid"
+    model_config = ConfigDict(from_attributes=True, extra="forbid")
 
 
 class UserInteractionsListResponse(BaseModel):
-    """Schema for a list of user interactions with pagination information."""
+    """
+    Схема для списка взаимодействий пользователей с информацией о пагинации.
 
-    user_interaction: List[UserInteractionOutput]
-    has_next: bool
-    next_token: Optional[str] = None
+    Атрибуты:
+        user_interaction (List[UserInteractionOutput]): Список взаимодействий пользователей.
+        has_next (bool): Индикатор наличия следующей страницы.
+        next_token (Optional[str]): Токен для следующей страницы результатов.
+    """
 
-    class Config:
-        extra = "forbid"
+    user_interaction: List[UserInteractionOutput] = Field(
+        ..., description="List of user interactions"
+    )
+    has_next: bool = Field(..., description="Indicates if there is a next page")
+    next_token: Optional[str] = Field(None, description="Token for the next page of results")
+
+    model_config = ConfigDict(extra="forbid")

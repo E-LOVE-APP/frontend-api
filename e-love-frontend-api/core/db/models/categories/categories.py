@@ -26,6 +26,8 @@ class Categories(BaseModel):
     category_descr: Column[str] = Column(String(250), nullable=False)
     category_icon: Column[str] = Column(String(50), nullable=True)
 
-    posts = relationship("UserPost", secondary=posts_categories_table, back_populates="category")
+    posts = relationship(
+        "UserPost", secondary=posts_categories_table, back_populates="category", lazy="selectin"
+    )
 
     users = relationship("User", secondary=user_categories_table, back_populates="categories")
