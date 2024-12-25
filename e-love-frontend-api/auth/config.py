@@ -9,12 +9,13 @@ print(f"Loaded .env path: {os.getenv('APP_AUTH_ENV_PATH')}")
 
 
 class AuthSettings(BaseSettings):
-    app_secret_key: str
-    auth0_api_audience: str
-    auth0_client_id: str
-    auth0_client_secret: str
-    auth0_client_secret: str
-    auth0_domain: str
+    # app_secret_key: str
+    # auth0_api_audience: str
+    # auth0_client_id: str
+    # auth0_client_secret: str
+    # auth0_client_secret: str
+    # auth0_domain: str
+    supabase_jwt_secret: str
 
     class Config:
         env_file = os.getenv("APP_AUTH_ENV_PATH")

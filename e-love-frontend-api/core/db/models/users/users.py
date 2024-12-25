@@ -30,7 +30,6 @@ class User(BaseModel):
         last_name (str): Фамилия пользователя.
         user_descr (str): Описание пользователя.
         email (str): Электронная почта пользователя.
-        password_hash (str): Хеш пароля пользователя.
         genders (List[UserGender]): Список гендеров пользователя.
         roles (List[UserRole]): Список ролей пользователя.
         categories (List[Category]): Список интересов пользователя.
@@ -45,7 +44,6 @@ class User(BaseModel):
     last_name: Column[str] = Column(String(50), nullable=False)
     user_descr: Column[str] = Column(String(500), nullable=True)
     email: Column[str] = Column(String(255), unique=True, nullable=False)
-    password_hash: Column[str] = Column(String(128), nullable=True)
 
     status_id: Column[UUID] = Column(ForeignKey("user_status.id"), nullable=False)
 
@@ -80,25 +78,3 @@ class User(BaseModel):
         foreign_keys="[UserInteraction.target_user_id]",
         back_populates="target_user",
     )
-
-    def set_password(self, password: str) -> None:
-        """
-        Устанавливает хеш пароля для пользователя.
-
-        Args:
-            password (str): Пароль в открытом виде.
-        """
-
-        self.password_hash = bcrypt.hash(password)
-
-    def check_password(self, password: str) -> bool:
-        """
-        Проверяет соответствие введенного пароля и сохраненного хеша.
-
-        Args:
-            password (str): Введенный пароль.
-
-        Returns:
-            bool: True, если пароли совпадают, иначе False.
-        """
-        return bcrypt.verify(password, self.password_hash)
