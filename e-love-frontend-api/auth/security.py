@@ -13,8 +13,17 @@ jwt_service = JWTService()
 security = HTTPBearer()
 
 
-# TODO: improve with refreshToken.
+# TODO: rename to AuthenticatorService?
 class Authenticator:
+    """
+    Класс для аутентификации пользователей. Предоставляет методы для аутентификации и проверки ролей.
+    vars:
+        jwt_service: Сервис для работы с JWT-токенами
+    methods:
+        authenticate - аутентификация пользователя
+        require_role - проверка роли пользователя
+    """
+
     def __init__(self, jwt_service: JWTService):
         self.jwt_service = jwt_service
 
