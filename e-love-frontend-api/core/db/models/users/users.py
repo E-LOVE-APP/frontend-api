@@ -40,6 +40,8 @@ class User(BaseModel):
 
     __tablename__ = "user"
 
+    supabase_user_id: Column[str] = Column(String(36), unique=True, nullable=True)
+
     first_name: Column[str] = Column(String(50), nullable=False)
     last_name: Column[str] = Column(String(50), nullable=False)
     user_descr: Column[str] = Column(String(500), nullable=True)
