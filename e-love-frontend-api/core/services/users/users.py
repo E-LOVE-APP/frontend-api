@@ -36,6 +36,37 @@ class UserService(BaseService):
         if password:
             user.set_password(password)
 
+    async def get_user_by_supabase_id(self, supabase_user_id: str) -> User:
+        """
+        Получает пользователя по supabase_user_id.
+
+        :param supabase_user_id: Идентификатор пользователя в Supabase.
+        :return: Объект пользователя.
+        :raises HTTPException: Если пользователь не найден.
+        """
+        try:
+            user = (
+                (
+                    await self.db_session.execute(
+                        select(User).where(User.supabase_user_id == supabase_user_id)
+                    )
+                )
+                .scalars()
+                .first()
+            )
+
+            if not user:
+                raise ExceptionHandler(
+                    status_code=404,
+                    detail="User with this supabase-id not found",
+                )
+
+            return user
+
+        except Exception as e:
+            logger.error(f"Error while fetching user by supabase_user_id: {e}")
+            ExceptionHandler(e)
+
     # TODO: можно отрефакторить, если в user_data заместо any добавить доп. тип в виде словаря (модели юзера) для лучшей типизации
     async def create_user(self, user_data: Dict[str, Any]) -> User:
         return await self.create_object(
@@ -44,6 +75,39 @@ class UserService(BaseService):
             unique_fields=["email"],
             preprocess_func=self._preprocess_user,
         )
+
+    async def create_user_after_sign_up(self, sub: str, payload_data: Dict[str, Any]) -> User:
+        """
+        Этот эндпоинт вызывается после signUp в Supabase.
+        Создает пользователя в базе данных.
+
+        params:
+            sub: Идентификатор пользователя в Supabase.
+            payload_data: Данные пользователя из Supabase.
+
+        return: Объект пользователя.
+        raises: HTTPException: Если пользователь не найден.
+        """
+        try:
+            # Check if the user already exists in our database with the given sub (supabase_id)
+            existing_user = self.get_user_by_supabase_id(sub)
+            if existing_user:
+                return existing_user
+            else:
+                user_data = {
+                    "supabase_user_id": sub,
+                    "email": payload_data["email"],
+                    "first_name": payload_data["first_name"],
+                    "last_name": payload_data["last_name"],
+                    "status_id": payload_data.get("status_id"),
+                    "roles": payload_data.get("roles"),
+                }
+                return await self.create_user(user_data)
+                # TODO: assign user roles using user_roles_service
+
+        except Exception as e:
+            logger.error(f"Error while creating user after sign up")
+            ExceptionHandler(e)
 
     async def get_user_by_id(self, user_id: UUID) -> User:
         return await self.get_object_by_id(User, user_id)

@@ -46,23 +46,23 @@ class Authenticator:
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-    def require_role(self, role: str) -> Callable:
-        """
-        Проверяет, имеет ли пользователь необходимую роль.
+    # def require_role(self, role: str) -> Callable:
+    #     """
+    #     Проверяет, имеет ли пользователь необходимую роль.
 
-        :param role: Требуемая роль
-        :return: Функция зависимости
-        """
+    #     :param role: Требуемая роль
+    #     :return: Функция зависимости
+    #     """
 
-        def role_checker(payload: dict = Depends(self.authenticate)) -> dict:
-            if "permissions" in payload and role in payload["permissions"]:
-                return payload
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=(f"Forbidden: insufficient permissions. Required roles list: ", role),
-            )
+    #     def role_checker(payload: dict = Depends(self.authenticate)) -> dict:
+    #         if "permissions" in payload and role in payload["permissions"]:
+    #             return payload
+    #         raise HTTPException(
+    #             status_code=status.HTTP_403_FORBIDDEN,
+    #             detail=(f"Forbidden: insufficient permissions. Required roles list: ", role),
+    #         )
 
-        return role_checker
+    #     return role_checker
 
 
 authenticator = Authenticator(jwt_service)

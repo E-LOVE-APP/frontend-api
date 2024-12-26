@@ -1,7 +1,6 @@
 from typing import List
 from uuid import UUID
 
-from passlib.hash import bcrypt
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.orm import Mapped, relationship
 

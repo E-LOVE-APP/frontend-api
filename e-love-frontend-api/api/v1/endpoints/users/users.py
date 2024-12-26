@@ -9,7 +9,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from auth.security import authenticator
 from configuration.database import get_db_session
 from core.schemas.errors.httperror import HTTPError
-from core.schemas.users.user_schema import UserCreate, UserOutput, UsersListResponse, UserUpdate
+from core.schemas.users.user_schema import (
+    UserCreate,
+    UserOutput,
+    UsersListResponse,
+    UserUpdate,
+    UserRegistration,
+)
 from core.services.users.users import UserService
 from dependencies.validate_query_params import validate_query_params
 
@@ -51,6 +57,22 @@ async def create_user(
     """
     user_service = UserService(db)
     return await user_service.create_user(user)
+
+
+@router.post("/finish_registration")
+async def finish_registration(
+    data: UserRegistration,
+    payload: dict = Depends(authenticator.authenticate),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """
+    Finish registration of the user.
+
+    - **data**: User registration data
+    """
+    sub = payload.get("sub")
+    user_service = UserService(db)
+    return await user_service.finish_registration(sub, data.dict())
 
 
 @router.get(

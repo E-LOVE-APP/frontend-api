@@ -104,6 +104,25 @@ class UserOutput(UserBase):
         return v
 
 
+class UserRegistration(BaseModel):
+    """
+    Схема, описывающая, какие поля нужно заполнить на этапе finish_registration.
+
+    Атрибуты:
+        first_name (str): Имя пользователя.
+        last_name (str): Фамилия пользователя.
+        user_descr (Optional[str]): Описание пользователя.
+        email (EmailStr): Уникальный email пользователя
+    """
+
+    first_name: str = Field(..., max_length=50, min_length=1)
+    last_name: str = Field(..., max_length=50, min_length=1)
+    user_descr: Optional[str] = Field(None, max_length=500)
+    email: EmailStr = Field(..., description="Unique email address of the user")
+    status_id: UUID = Field(..., description="User status ID")
+    roles: List[UUID] = Field(..., description="List of user roles")
+
+
 class UsersListResponse(BaseModel):
     """
     Схема списка пользователей с информацией о пагинации.
