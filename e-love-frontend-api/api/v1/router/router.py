@@ -17,6 +17,7 @@ from api.v1.endpoints.user_role_association.user_roles_association import (
 from api.v1.endpoints.user_status.user_status import router as user_status_router
 from api.v1.endpoints.users.users import router as users_router
 from api.v1.endpoints.users_matching.users_matching import router as users_matching_router
+from api.v1.endpoints.users_harbor.users_harbor import router as users_harbor_router
 
 api_router = APIRouter()
 api_router.include_router(users_router, prefix="/api/v1", tags=["Users"])
@@ -31,6 +32,7 @@ api_router.include_router(user_post_router, prefix="/api/v1", tags=["User Post"]
 api_router.include_router(user_categories_router, prefix="/api/v1", tags=["User Categories"])
 api_router.include_router(chat_router, prefix="/chat/v1", tags=["Users chat"])
 api_router.include_router(user_images_router, prefix="/api/v1", tags=["User Images"])
+api_router.include_router(users_harbor_router, prefix="/api/v1", tags=["Users Harbor"])
 
 api_router.include_router(user_interaction_router, prefix="/api/v1", tags=["User interactions"])
 api_router.include_router(

@@ -6,11 +6,12 @@ Use case example:
 """
 
 import logging
-
+from typing import Optional, List
 from core.db.models.users.users import User
 from core.services.users.users import UserService
 from exceptions.exception_handler import ExceptionHandler
 from utils.custom_pagination import Paginator
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
