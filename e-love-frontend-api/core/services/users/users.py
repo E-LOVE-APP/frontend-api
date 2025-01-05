@@ -53,6 +53,7 @@ class UserService(BaseService):
         limit: int = 10,
         email: Optional[str] = None,
         next_token: Optional[str] = None,
+        isFullListRequested: Optional[bool] = False,
     ) -> List[User]:
         """
         Получает список пользователей с поддержкой пагинации.
@@ -69,6 +70,9 @@ class UserService(BaseService):
 
             if email:
                 filters = User.email == email
+
+            if isFullListRequested:
+                limit = None
 
             response = await self.paginator.paginate_query(
                 base_query=base_query,

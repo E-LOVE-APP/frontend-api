@@ -16,8 +16,8 @@ from api.v1.endpoints.user_role_association.user_roles_association import (
 )
 from api.v1.endpoints.user_status.user_status import router as user_status_router
 from api.v1.endpoints.users.users import router as users_router
-from api.v1.endpoints.users_matching.users_matching import router as users_matching_router
 from api.v1.endpoints.users_harbor.users_harbor import router as users_harbor_router
+from api.v1.endpoints.users_matching.users_matching import router as users_matching_router
 
 api_router = APIRouter()
 api_router.include_router(users_router, prefix="/api/v1", tags=["Users"])

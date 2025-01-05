@@ -104,6 +104,19 @@ class UserOutput(UserBase):
         return v
 
 
+class UsersHarborListResponse(BaseModel):
+    """
+    Схема ответа для списка пользователей из харбра. Используется для выгрузки пользователей во внешние микросервисы.
+
+    Атрибуты:
+        users (List[UserOutput]): Список пользователей.
+    """
+
+    users: List[UserOutput] = Field(..., description="List of users")
+
+    model_config = ConfigDict(extra="forbid")
+
+
 class UsersListResponse(BaseModel):
     """
     Схема списка пользователей с информацией о пагинации.
