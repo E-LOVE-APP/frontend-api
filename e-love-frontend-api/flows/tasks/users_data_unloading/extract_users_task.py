@@ -12,7 +12,7 @@ Prefect task for extracting users data from the database.
 
 
 # TODO: probably should be optimized
-@task
+@task(cache_key_fn=lambda *args, **kwargs: None)
 async def extract_users_task(db_session: AsyncSession) -> List[dict]:
     """
     Async task for extracting users from the database.
@@ -25,10 +25,12 @@ async def extract_users_task(db_session: AsyncSession) -> List[dict]:
         Exception: If failed to extract users data from the database.
     """
     try:
-        query = text("SELECT * FROM users")
+        query = text("SELECT * FROM user")
         result = await db_session.execute(query)
-        users = result.fetchall()
-        return [dict(user) for user in users]
+        rows = result.fetchall()
+        users = [dict(r._mapping) for r in rows]
 
-    except:
+        return users
+
+    except Exception as e:
         ExceptionHandler(e)
