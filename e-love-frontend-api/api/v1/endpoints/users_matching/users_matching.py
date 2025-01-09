@@ -100,4 +100,4 @@ async def get_matching_users_list(
             matching_users=matching_users_output, total=total, next_token=next_token
         )
     else:
-        return matching_users
+        return {"recommended_users": matching_users}

@@ -104,11 +104,11 @@ async def get_category_by_id(
     tags=["Categories", "Get categories list", "List"],
     dependencies=[
         Depends(get_db_session),
-        Depends(authenticator.authenticate),
+        # Depends(authenticator.authenticate),
     ],
 )
 async def get_categories_list(
-    limit: int = 10,
+    limit: int = 100,
     next_token: Optional[str] = None,
     db: AsyncSession = Depends(get_db_session),
 ):

@@ -224,6 +224,7 @@ class UsersMatchingService:
                 response.raise_for_status()
                 matching_users = response.json()
 
+                # TODO: тут вернеться массив UUID...
                 return matching_users
         except Exception as e:
             ExceptionHandler(e)
