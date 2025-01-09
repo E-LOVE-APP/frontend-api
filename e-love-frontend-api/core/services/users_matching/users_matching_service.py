@@ -1,6 +1,8 @@
 """ Users matching service module """
 
 import logging
+import httpx
+import os
 from typing import List, Optional, Tuple
 from uuid import UUID
 
@@ -15,6 +17,7 @@ from sqlalchemy.sql.elements import Label
 from core.db.models.categories.categories import Categories
 from core.db.models.intermediate_models.user_categories import user_categories_table
 from core.db.models.users.users import User
+from core.services.users.users import UserService
 from core.services.user_categories.user_categories import UserCategoriesAssociationService
 from core.services.user_interaction.user_interaction import UserInteractionService
 from exceptions.exception_handler import ExceptionHandler
@@ -24,6 +27,8 @@ from utils.functions.get_total_count import get_total_count
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+AI_SERVICE_URL = os.getenv("AI_SERVICE_URL")
 
 
 class UsersMatchingService:
@@ -37,11 +42,13 @@ class UsersMatchingService:
     для построения и выполнения запросов к базе данных с использованием SQLAlchemy.
     """
 
+    # TODO: we can initialize all stuff like db or paginator directly here below instead of doing it directly in the router
     def __init__(
         self,
         db_session: AsyncSession,
         user_interaction_service: UserInteractionService,
         user_categories_service: UserCategoriesAssociationService,
+        user_service: Optional[UserService] = None,
     ):
         """
         Инициализирует экземпляр UsersMatchingService.
@@ -53,6 +60,7 @@ class UsersMatchingService:
             - paginator: Кастомный пагинатор для результатов запроса.
         """
         self.db_session = db_session
+        self.user_service = user_service
         self.user_interaction_service = user_interaction_service
         self.user_categories_service = user_categories_service
         self.paginator = Paginator[User](db_session=db_session, model=User)
@@ -179,6 +187,51 @@ class UsersMatchingService:
 
         return base_query
 
+    async def get_matching_users_list_from_ai_service(self, current_user_id: UUID) -> List[User]:
+        """
+        Получает список пользователей, соответствующих критериям совпадения по категориям из AI-сервиса.
+        params:
+            current_user_data (dict): Данные текущего пользователя.
+        returns:
+            List[User]: Список пользователей, соответствующих критериям.
+        raises:
+            HTTPException: Если не удалось получить совпадающих пользователей от AI-сервиса.
+        """
+        try:
+            current_user = await self.user_service.get_user_by_id(current_user_id)
+            if not current_user:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found.",
+                )
+
+            viewed_users_ids = await self.user_interaction_service.get_viewed_users_list(
+                current_user_id=current_user_id, paginate=False
+            )
+
+            # Potentially bad code for me
+            current_user_data = {
+                "user_id": str(current_user.id),
+                "description": current_user.user_descr,
+                "categories": [cat.category_name for cat in current_user.categories],
+                "viewed_users": [str(usr_id) for usr_id in viewed_users_ids],
+            }
+
+            # TODO: extract to ai-client class with typing, etc.
+            # TODO: add pagination support
+            async with httpx.AsyncClient() as client:
+                response = await client.post(AI_SERVICE_URL, json=current_user_data)
+                response.raise_for_status()
+                matching_users = response.json()
+
+                return matching_users
+        except Exception as e:
+            ExceptionHandler(e)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to get matching users from AI service.",
+            )
+
     # TODO: добавить так же вывод постов юзера
     async def get_matching_users_list(
         self,
@@ -208,54 +261,59 @@ class UsersMatchingService:
             запрос с учетом выбранного типа матчинга и возвращает результаты с применением пагинации.
         """
         try:
-            curr_user_categories = await self.user_categories_service.get_user_categories(
-                user_id=current_user_id
-            )
-            curr_user_categories_ids = [category.id for category in curr_user_categories]
+            if matching_type != MatchingType.MAGIC:
+                curr_user_categories = await self.user_categories_service.get_user_categories(
+                    user_id=current_user_id
+                )
+                curr_user_categories_ids = [category.id for category in curr_user_categories]
 
-            # TODO: переместить if-проверки?
-            if not curr_user_categories_ids:
-                return []
+                # TODO: переместить if-проверки?
+                if not curr_user_categories_ids:
+                    return []
 
-            viewed_users_ids = await self.user_interaction_service.get_viewed_users_list(
-                current_user_id, paginate=False
-            )
+                viewed_users_ids = await self.user_interaction_service.get_viewed_users_list(
+                    current_user_id, paginate=False
+                )
 
-            # if not viewed_users_ids:
-            #     return []
+                # if not viewed_users_ids:
+                #     return []
 
-            potential_users_subquery = await self.build_potential_users_subquery(
-                current_user_id=current_user_id,
-                curr_user_category_ids=curr_user_categories_ids,
-                viewed_users_ids=viewed_users_ids,
-            )
+                potential_users_subquery = await self.build_potential_users_subquery(
+                    current_user_id=current_user_id,
+                    curr_user_category_ids=curr_user_categories_ids,
+                    viewed_users_ids=viewed_users_ids,
+                )
 
-            overlap_percentage_result = await self.calculate_overlap_percentage(
-                potential_users_subq=potential_users_subquery,
-                num_curr_user_categories=len(curr_user_categories_ids),
-            )
+                overlap_percentage_result = await self.calculate_overlap_percentage(
+                    potential_users_subq=potential_users_subquery,
+                    num_curr_user_categories=len(curr_user_categories_ids),
+                )
 
-            main_query = await self.build_main_query(
-                potential_users_subq=potential_users_subquery,
-                overlap_percentage=overlap_percentage_result,
-                matching_type=matching_type,
-            )
+                main_query = await self.build_main_query(
+                    potential_users_subq=potential_users_subquery,
+                    overlap_percentage=overlap_percentage_result,
+                    matching_type=matching_type,
+                )
 
-            paginated_response = await self.paginator.paginate_query(
-                limit=limit,
-                base_query=main_query,
-                model_name="matching_users",
-                next_token=next_token,
-            )
+                paginated_response = await self.paginator.paginate_query(
+                    limit=limit,
+                    base_query=main_query,
+                    model_name="matching_users",
+                    next_token=next_token,
+                )
 
-            # Используем три строчки внизу для того чтобы вернуть Tuple в виде:
-            # {matching_users: List[Users], total: len(matching_users), next_token: str}
-            # TODO: этот функционал можно вынести в отдельную функцию, возможно даже в самом пагинаторе
-            matching_users = paginated_response["matching_users"]
-            total = await get_total_count(db_session=self.db_session, main_query=main_query)
-            next_token = paginated_response["next_token"]
+                # Используем три строчки внизу для того чтобы вернуть Tuple в виде:
+                # {matching_users: List[Users], total: len(matching_users), next_token: str}
+                # TODO: этот функционал можно вынести в отдельную функцию, возможно даже в самом пагинаторе
+                matching_users = paginated_response["matching_users"]
+                total = await get_total_count(db_session=self.db_session, main_query=main_query)
+                next_token = paginated_response["next_token"]
 
-            return matching_users, total, next_token
+                return matching_users, total, next_token
+            else:
+                # TODO: посмотреть как это лучше сработает. Это прямо так с пагинтором работать не будет.
+                matching_users = await self.get_matching_users_list_from_ai_service(current_user_id)
+                return matching_users, len(matching_users), None
 
         except Exception as e:
             await self.db_session.rollback()

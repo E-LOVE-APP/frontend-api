@@ -38,7 +38,7 @@ router = APIRouter(prefix="/users-matching")
             "model": HTTPError,
         },
     },
-    tags=["Users", "Get user list", "List"],
+    tags=["Users", "Get user list", "List", "AI", "Paginator", "Ai service"],
     dependencies=[
         Depends(authenticator.authenticate),
         validate_query_params(
@@ -86,13 +86,18 @@ async def get_matching_users_list(
         next_token=next_token,
     )
 
-    # Конвертируем пользователей в Pydantic модели. Оно конвертирует таким образом, что позволяет одновременно
-    # иметь в выводе как UserOutput, так и CategoryOutput. Код не самый красивый, но я его позже подправлю
-    # Сначала этот код отрезает лишние атрибуты из модели UserOutput, которые не входят в pydantic-схему
-    # Потом туда добавляются CategoryOutput сущности категорий.
-    # TODO: refactor
-    matching_users_output = [UserOutput.from_orm(user) for user in matching_users]
+    if matching_type != MatchingType.MAGIC:
 
-    return UsersMatchingListResponse(
-        matching_users=matching_users_output, total=total, next_token=next_token
-    )
+        # Конвертируем пользователей в Pydantic модели. Оно конвертирует таким образом, что позволяет одновременно
+        # иметь в выводе как UserOutput, так и CategoryOutput. Код не самый красивый, но я его позже подправлю
+        # Сначала этот код отрезает лишние атрибуты из модели UserOutput, которые не входят в pydantic-схему
+        # Потом туда добавляются CategoryOutput сущности категорий.
+        # TODO: refactor
+
+        matching_users_output = [UserOutput.from_orm(user) for user in matching_users]
+
+        return UsersMatchingListResponse(
+            matching_users=matching_users_output, total=total, next_token=next_token
+        )
+    else:
+        return matching_users

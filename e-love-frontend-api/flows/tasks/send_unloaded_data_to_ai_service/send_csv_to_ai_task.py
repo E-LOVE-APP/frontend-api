@@ -1,4 +1,5 @@
 import httpx
+import os
 from prefect import task
 
 from exceptions.exception_handler import ExceptionHandler
@@ -6,6 +7,8 @@ from exceptions.exception_handler import ExceptionHandler
 """
 Prefect task for sending CSV file to AI service.
 """
+
+AI_SERVICE_URL = os.getenv("AI_SERVICE_CSV_API_URL")
 
 
 # TODO: change the URL to env-variable
@@ -22,11 +25,10 @@ async def send_csv_to_ai_task(csv_path: str):
         Exception: If failed to send CSV file to AI service.
     """
     try:
-        url = "http://ai-service:8001/upload-csv"
         async with httpx.AsyncClient() as client:
             with open(csv_path, "rb") as f:
                 files = {"file": ("users.csv", f, "text/csv")}
-                response = await client.post(url, files=files)
+                response = await client.post(AI_SERVICE_URL, files=files)
                 response.raise_for_status()
     except Exception as e:
         ExceptionHandler(e)

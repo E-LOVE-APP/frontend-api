@@ -160,3 +160,55 @@ class Paginator(Generic[T]):
         }
 
         return response
+
+    # TODO: refactor - chatGPT generated code!
+    # def in_memory_paginate(items: list[dict], next_token: Optional[str], limit: int) -> dict:
+    #     """
+    #     items: уже отсортированный массив (score DESC, user_id ASC)
+    #         ИЛИ наоборот, главное, чтобы был единый порядок
+    #     next_token: курсор base64, может быть None
+    #     limit: сколько хотим вернуть
+    #     return: {
+    #     "items": [...],
+    #     "has_next": bool,
+    #     "next_token": str or None
+    #     }
+    #     """
+    #     # 1) Раскодируем курсор
+    #     start_index = 0
+    #     last_score = None
+    #     last_user_id = None
+    #     if next_token:
+    #         token_data = decode_token(next_token)
+    #         last_score = float(token_data["score"])
+    #         last_user_id = token_data["user_id"]
+    #         # 2) находим, где в массиве items находится этот курсор
+    #         #    допустим items отсортированы по score DESC, user_id ASC
+    #         for idx, it in enumerate(items):
+    #             score = it["final_score"]
+    #             uid = it["user_id"]
+    #             # сравниваем, пока не найдём позицию > / == ...
+    #             # Нужно аккуратно определить условие
+    #             # if (score == last_score and uid == last_user_id):
+    #             #    start_index = idx + 1
+    #             #    break
+    #             # но если вы в cursor-based подходе делаете
+    #             # (score < last_score) or (score==last_score & uid>last_user_id)
+    #             # тогда нужно найти индекс первого элемента, который *идёт после* этого курсора
+    #             # ...
+    #         # start_index — позиция, с которой начинаем страницу
+
+    #     # 3) Берём slice
+    #     end_index = start_index + limit
+    #     page_items = items[start_index:end_index]
+
+    #     has_next = end_index < len(items)
+    #     new_next_token = None
+    #     if has_next:
+    #         # последний элемент на странице
+    #         last_elem = page_items[-1]
+    #         new_next_token = encode_token(
+    #             {"score": str(last_elem["final_score"]), "user_id": last_elem["user_id"]}
+    #         )
+
+    #     return {"items": page_items, "has_next": has_next, "next_token": new_next_token}
