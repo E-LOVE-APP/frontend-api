@@ -1,11 +1,11 @@
 """ Users matching service module """
 
 import logging
-import httpx
 import os
 from typing import List, Optional, Tuple
 from uuid import UUID
 
+import httpx
 from fastapi import HTTPException, status
 from sqlalchemy import Float, and_, func, select
 from sqlalchemy.exc import SQLAlchemyError
@@ -17,9 +17,9 @@ from sqlalchemy.sql.elements import Label
 from core.db.models.categories.categories import Categories
 from core.db.models.intermediate_models.user_categories import user_categories_table
 from core.db.models.users.users import User
-from core.services.users.users import UserService
 from core.services.user_categories.user_categories import UserCategoriesAssociationService
 from core.services.user_interaction.user_interaction import UserInteractionService
+from core.services.users.users import UserService
 from exceptions.exception_handler import ExceptionHandler
 from utils.custom_pagination import Paginator
 from utils.enums.matching_type import MATCHING_PERCENTAGE_RANGES, MatchingType

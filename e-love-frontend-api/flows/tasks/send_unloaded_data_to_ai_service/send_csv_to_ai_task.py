@@ -1,5 +1,6 @@
-import httpx
 import os
+
+import httpx
 from prefect import task
 
 from exceptions.exception_handler import ExceptionHandler
