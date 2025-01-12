@@ -4,10 +4,10 @@ from uuid import UUID
 import aiohttp
 
 
+# TODO: provide try-catch blocks here
 class ChatMicroserviceClient:
     """
     A client to interact with the Chat Microservice via REST endpoints.
-    Follows the Single Responsibility principle: one class for all chat-related requests.
     """
 
     def __init__(self, base_url: str, session: Optional[aiohttp.ClientSession] = None):

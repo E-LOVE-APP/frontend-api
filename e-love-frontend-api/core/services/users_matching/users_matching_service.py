@@ -24,6 +24,7 @@ from exceptions.exception_handler import ExceptionHandler
 from utils.custom_pagination import Paginator
 from utils.enums.matching_type import MATCHING_PERCENTAGE_RANGES, MatchingType
 from utils.functions.get_total_count import get_total_count
+from api.clients.ai_microservice_client import AiMicroserviceClient
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -198,6 +199,7 @@ class UsersMatchingService:
             HTTPException: Если не удалось получить совпадающих пользователей от AI-сервиса.
         # TODO: (в ближайшем будущем) - проверять наличие у текущего пользователя ПРЕМИУМ подписки.
         """
+        ai_microservice_client = AiMicroserviceClient(AI_SERVICE_URL)
         try:
             current_user = await self.user_service.get_user_by_id(current_user_id)
             if not current_user:
@@ -220,13 +222,11 @@ class UsersMatchingService:
 
             # TODO: extract to ai-client class with typing, etc.
             # TODO: add pagination support
-            async with httpx.AsyncClient() as client:
-                response = await client.post(AI_SERVICE_URL, json=current_user_data)
-                response.raise_for_status()
-                matching_users = response.json()
+            recommendations = await ai_microservice_client.get_users_recommendations(
+                current_user_data=current_user_data
+            )
 
-                # TODO: тут вернеться массив UUID...
-                return matching_users
+            return recommendations
         except Exception as e:
             ExceptionHandler(e)
             raise HTTPException(
