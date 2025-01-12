@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
+# TODO: добавить более нормальные комменты (дока)
 @flow(name="Daily Export Flow", log_prints=True)
 async def daily_export_flow():
     """
