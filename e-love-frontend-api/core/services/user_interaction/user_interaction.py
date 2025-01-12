@@ -94,7 +94,7 @@ class UserInteractionService(BaseService):
         """
         try:
             query = select(UserInteraction.target_user_id).where(
-                UserInteraction.user_id == current_user_id
+                UserInteraction.user_id == str(current_user_id)
             )
 
             if paginate:

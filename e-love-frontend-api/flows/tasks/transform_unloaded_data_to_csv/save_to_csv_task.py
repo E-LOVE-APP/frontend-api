@@ -3,8 +3,6 @@ from datetime import datetime
 from typing import List
 
 import pandas as pd
-
-from datetime import datetime
 from prefect import task
 
 from exceptions.exception_handler import ExceptionHandler

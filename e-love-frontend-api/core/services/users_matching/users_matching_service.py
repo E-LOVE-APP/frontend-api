@@ -217,7 +217,7 @@ class UsersMatchingService:
                 "user_id": str(current_user.id),
                 "description": current_user.user_descr,
                 "categories": [cat.category_name for cat in current_user.categories],
-                "viewed_users": [str(usr_id) for usr_id in viewed_users_ids],
+                "viewed_users": viewed_users_ids,
             }
 
             # TODO: extract to ai-client class with typing, etc.
