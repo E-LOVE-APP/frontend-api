@@ -5,7 +5,6 @@ class MatchingType(Enum):
     STANDARD = "standard"
     MAX_COMPATIBILITY = "max_compatibility"
     OPPOSITES_ATTRACT = "opposites_attract"
-    MAGIC = "magic"
 
 
 MATCHING_PERCENTAGE_RANGES = {

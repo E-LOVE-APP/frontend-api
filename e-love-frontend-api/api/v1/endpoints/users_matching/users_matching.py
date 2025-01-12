@@ -29,7 +29,10 @@ router = APIRouter(prefix="/users-matching")
     "/premium",
     tags=["Users", "Get user list", "List", "AI", "Ai service"],
 )
-async def get_matching_users_list_from_ai_service(current_user_id: UUID):
+async def get_matching_users_list_from_ai_service(
+    current_user_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+):
     """
     Get a list of matching-users from AI service.
     """
@@ -46,6 +49,7 @@ async def get_matching_users_list_from_ai_service(current_user_id: UUID):
         db_session=db,
         user_interaction_service=user_interaction_service,
         user_categories_service=user_categories_service,
+        user_service=user_service,
     )
 
     return await users_matching_service.get_matching_users_list_from_ai_service(

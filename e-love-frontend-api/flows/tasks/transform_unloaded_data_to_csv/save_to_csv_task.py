@@ -2,6 +2,9 @@ import csv
 from datetime import datetime
 from typing import List
 
+import pandas as pd
+
+from datetime import datetime
 from prefect import task
 
 from exceptions.exception_handler import ExceptionHandler
@@ -12,29 +15,20 @@ Prefect task for saving users data to a CSV file.
 
 
 @task
-def save_to_csv_task(users: List[dict]) -> str:
+def save_to_csv_task(users_df: pd.DataFrame) -> str:
     """
-    Task for saving users data to a CSV file.
-
-    params:
-        users (List[dict]): List of users data.
-    returns:
-        csv_path (str): Path to the saved CSV file.
-    raises:
-        Exception: If no users data to save to CSV.
+    Сохраняет DataFrame пользователей в CSV.
+    Если DataFrame пуст, выбрасывает Exception.
     """
     try:
-        if not users:
+        if users_df.empty:
             raise Exception("No users data to save to CSV")
 
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         csv_path = f"data/users_{timestamp}.csv"
 
-        with open(csv_path, "w", newline="", encoding="utf-8") as file:
-            writer = csv.DictWriter(file, fieldnames=users[0].keys())
-            writer.writeheader()
-            writer.writerows(users)
-
+        users_df.to_csv(csv_path, index=False, encoding="utf-8")
         return csv_path
+
     except Exception as e:
         ExceptionHandler(e)
