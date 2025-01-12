@@ -1,8 +1,9 @@
+from typing import Any, Dict, List, Optional
 from uuid import UUID
-from fastapi import File
-from typing import Optional, Dict, Any, List
 
 import aiohttp
+from fastapi import File
+
 from exceptions.exception_handler import ExceptionHandler
 
 

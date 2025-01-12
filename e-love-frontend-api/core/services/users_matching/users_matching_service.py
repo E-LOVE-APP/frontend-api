@@ -14,6 +14,7 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.sql import Select, Subquery
 from sqlalchemy.sql.elements import Label
 
+from api.clients.ai_microservice_client import AiMicroserviceClient
 from core.db.models.categories.categories import Categories
 from core.db.models.intermediate_models.user_categories import user_categories_table
 from core.db.models.users.users import User
@@ -24,7 +25,6 @@ from exceptions.exception_handler import ExceptionHandler
 from utils.custom_pagination import Paginator
 from utils.enums.matching_type import MATCHING_PERCENTAGE_RANGES, MatchingType
 from utils.functions.get_total_count import get_total_count
-from api.clients.ai_microservice_client import AiMicroserviceClient
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

@@ -3,8 +3,8 @@ import os
 import httpx
 from prefect import task
 
-from exceptions.exception_handler import ExceptionHandler
 from api.clients.ai_microservice_client import AiMicroserviceClient
+from exceptions.exception_handler import ExceptionHandler
 
 """
 Prefect task for sending CSV file to AI service.
