@@ -11,6 +11,8 @@ Prefect task for sending CSV file to AI service.
 """
 
 AI_SERVICE_URL = os.getenv("AI_SERVICE_CSV_API_URL")
+if AI_SERVICE_URL is None:
+    raise ValueError("AI_SERVICE_CSV_API_URL is not set, cannot initialize AiMicroserviceClient!")
 
 
 # TODO: change the URL to env-variable

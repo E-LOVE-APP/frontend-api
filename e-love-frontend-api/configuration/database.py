@@ -58,7 +58,7 @@ AsyncSessionLocal = async_sessionmaker(
 )
 
 
-# @asynccontextmanager
+@asynccontextmanager
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as session:
         try:

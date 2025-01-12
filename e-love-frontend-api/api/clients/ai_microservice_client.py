@@ -34,12 +34,13 @@ class AiMicroserviceClient:
         session = await self._get_session()
 
         try:
-            form = aiohttp.FormData()
             with open(csv_path, "rb") as f:
-                form.add_field(name="file", value=f, filename="users.csv", content_type="text/csv")
-
-            async with session.post(url, data=form) as response:
-                response.raise_for_status()
+                form = aiohttp.FormData()
+                form.add_field("file", f, filename="users.csv", content_type="text/csv")
+                # Обрати внимание на контекст @Neeplc (если будешь читать этот коммент) - сейчас мы находимся в контексте, где читаеться файл. Если бы async with session.post был бы за контекстом (один таб влево, например) он бы моментально делал запрос на ai-microservice, что приводило бы к ошибке, так как файл бы просто не успевал бы до конца прочитаться.
+                async with session.post(url, data=form) as response:
+                    response.raise_for_status()
+                    return await response.json()
         except Exception as e:
             ExceptionHandler(e)
 
