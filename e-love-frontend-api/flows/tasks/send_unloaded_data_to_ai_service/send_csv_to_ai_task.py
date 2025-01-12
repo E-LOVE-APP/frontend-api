@@ -30,11 +30,6 @@ async def send_csv_to_ai_task(csv_path: str):
     """
     ai_microservice_client = AiMicroserviceClient(AI_SERVICE_URL)
     try:
-        # async with httpx.AsyncClient() as client:
-        #     with open(csv_path, "rb") as f:
-        #         files = {"file": ("users.csv", f, "text/csv")}
-        #         response = await client.post(AI_SERVICE_URL, files=files)
-        #         response.raise_for_status()
         return await ai_microservice_client.upload_users_data(csv_path=csv_path)
     except Exception as e:
         ExceptionHandler(e)
