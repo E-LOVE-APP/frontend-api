@@ -31,7 +31,7 @@ class CategoriesService(BaseService):
 
     async def get_categories_list(
         self,
-        limit: int = 10,
+        limit: int = 100,
         next_token: Optional[str] = None,
     ) -> List[Categories]:
         """

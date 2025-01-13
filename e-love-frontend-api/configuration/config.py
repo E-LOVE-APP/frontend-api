@@ -8,6 +8,8 @@ from pydantic_settings import BaseSettings
 load_dotenv(os.getenv("APP_ENV_PATH"))
 print(f"Loaded .env path: {os.getenv('APP_ENV_PATH')}")
 
+# TODO: refactor
+
 
 class Settings(BaseSettings):
     app_name: str

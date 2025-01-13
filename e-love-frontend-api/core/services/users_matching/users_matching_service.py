@@ -1,9 +1,11 @@
 """ Users matching service module """
 
 import logging
+import os
 from typing import List, Optional, Tuple
 from uuid import UUID
 
+import httpx
 from fastapi import HTTPException, status
 from sqlalchemy import Float, and_, func, select
 from sqlalchemy.exc import SQLAlchemyError
@@ -12,11 +14,13 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.sql import Select, Subquery
 from sqlalchemy.sql.elements import Label
 
+from api.clients.ai_microservice_client import AiMicroserviceClient
 from core.db.models.categories.categories import Categories
 from core.db.models.intermediate_models.user_categories import user_categories_table
 from core.db.models.users.users import User
 from core.services.user_categories.user_categories import UserCategoriesAssociationService
 from core.services.user_interaction.user_interaction import UserInteractionService
+from core.services.users.users import UserService
 from exceptions.exception_handler import ExceptionHandler
 from utils.custom_pagination import Paginator
 from utils.enums.matching_type import MATCHING_PERCENTAGE_RANGES, MatchingType
@@ -24,6 +28,8 @@ from utils.functions.get_total_count import get_total_count
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+AI_SERVICE_URL = os.getenv("AI_SERVICE_URL")
 
 
 class UsersMatchingService:
@@ -37,11 +43,13 @@ class UsersMatchingService:
     для построения и выполнения запросов к базе данных с использованием SQLAlchemy.
     """
 
+    # TODO: we can initialize all stuff like db or paginator directly here below instead of doing it directly in the router
     def __init__(
         self,
         db_session: AsyncSession,
         user_interaction_service: UserInteractionService,
         user_categories_service: UserCategoriesAssociationService,
+        user_service: Optional[UserService] = None,
     ):
         """
         Инициализирует экземпляр UsersMatchingService.
@@ -53,6 +61,7 @@ class UsersMatchingService:
             - paginator: Кастомный пагинатор для результатов запроса.
         """
         self.db_session = db_session
+        self.user_service = user_service
         self.user_interaction_service = user_interaction_service
         self.user_categories_service = user_categories_service
         self.paginator = Paginator[User](db_session=db_session, model=User)
@@ -179,6 +188,52 @@ class UsersMatchingService:
 
         return base_query
 
+    async def get_matching_users_list_from_ai_service(self, current_user_id: UUID) -> List[User]:
+        """
+        Получает список пользователей, соответствующих критериям совпадения по категориям из AI-сервиса.
+        params:
+            current_user_data (dict): Данные текущего пользователя.
+        returns:
+            List[User]: Список пользователей, соответствующих критериям.
+        raises:
+            HTTPException: Если не удалось получить совпадающих пользователей от AI-сервиса.
+        # TODO: (в ближайшем будущем) - проверять наличие у текущего пользователя ПРЕМИУМ подписки.
+        """
+        ai_microservice_client = AiMicroserviceClient(AI_SERVICE_URL)
+        try:
+            current_user = await self.user_service.get_user_by_id(current_user_id)
+            if not current_user:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found.",
+                )
+
+            viewed_users_ids = await self.user_interaction_service.get_viewed_users_list(
+                current_user_id=current_user_id, paginate=False
+            )
+
+            # Potentially bad code for me
+            current_user_data = {
+                "user_id": str(current_user.id),
+                "description": current_user.user_descr,
+                "categories": [cat.category_name for cat in current_user.categories],
+                "viewed_users": viewed_users_ids,
+            }
+
+            # TODO: extract to ai-client class with typing, etc.
+            # TODO: add pagination support
+            recommendations = await ai_microservice_client.get_users_recommendations(
+                current_user_data=current_user_data
+            )
+
+            return recommendations
+        except Exception as e:
+            ExceptionHandler(e)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to get matching users from AI service.",
+            )
+
     # TODO: добавить так же вывод постов юзера
     async def get_matching_users_list(
         self,
@@ -206,6 +261,7 @@ class UsersMatchingService:
             Этот метод получает категории текущего пользователя, вычисляет потенциальных пользователей,
             с которыми есть общие категории, и вычисляет процент совпадения. Затем формирует основной
             запрос с учетом выбранного типа матчинга и возвращает результаты с применением пагинации.
+        # TODO: (на будущее) - добавить проверку наличия у текущего пользователя ОБЫЧНОЙ подписки.
         """
         try:
             curr_user_categories = await self.user_categories_service.get_user_categories(

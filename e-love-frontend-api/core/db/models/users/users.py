@@ -53,7 +53,9 @@ class User(BaseModel):
 
     images: Mapped["UserImages"] = relationship("UserImages", back_populates="user")
 
-    posts: Mapped["UserPost"] = relationship("UserPost", back_populates="user", lazy="selectin")
+    posts: Mapped[List["UserPost"]] = relationship(
+        "UserPost", back_populates="user", lazy="selectin", uselist=True
+    )
 
     # TODO: delete AuditLogs table (UC-35)
     logs: Mapped["AuditLogs"] = relationship("AuditLogs", back_populates="user")

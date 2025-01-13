@@ -16,6 +16,4 @@ class UserPost(BaseModel):
     user_id = Column(ForeignKey("user.id"), nullable=False)
     user = relationship("User", back_populates="posts")
 
-    category = relationship(
-        "Categories", secondary=posts_categories_table, back_populates="posts", lazy="selectin"
-    )
+    category = relationship("Categories", secondary=posts_categories_table, back_populates="posts")

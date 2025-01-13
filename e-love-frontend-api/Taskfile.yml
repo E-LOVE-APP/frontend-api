@@ -29,9 +29,7 @@ tasks:
   docker-clean:
     desc: "Stop Docker containers and clean up volumes, networks, and images"
     cmds:
-      - docker-compose down --volumes --rmi all --remove-orphans
-      - docker system prune -f
-      - docker volume prune -f
+      - docker-compose down --volumes --remove-orphans --rmi local
 
   upgrade-head:
     desc: "Upgrade the database to the latest revision"

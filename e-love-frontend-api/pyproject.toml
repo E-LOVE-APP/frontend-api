@@ -24,6 +24,9 @@ jwt = "^1.3.1"
 pyjwt = {extras = ["crypto"], version = "^2.9.0"}
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 aiohttp = "^3.11.10"
+git-fame = "^2.0.2"
+prefect = "^3.1.11"
+pandas = "^2.2.3"
 
 
 [tool.poetry.group.dev.dependencies]

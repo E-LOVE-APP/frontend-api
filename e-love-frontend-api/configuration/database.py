@@ -1,7 +1,7 @@
 # database.py
 
+import contextlib
 import logging
-from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 import colorlog
@@ -58,11 +58,60 @@ AsyncSessionLocal = async_sessionmaker(
 )
 
 
+# @asynccontextmanager
+# async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
+#     async with AsyncSessionLocal() as session:
+#         try:
+#             yield session
+#         except Exception as e:
+#             await session.rollback()
+#             logger.error(f"Database session error: {e}")
+#             raise
+
+import contextlib
+import logging
+import traceback
+from typing import AsyncGenerator
+
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import declarative_base
+
+from configuration.config import settings
+
+logger = logging.getLogger(__name__)
+
+DATABASE_URL = settings.database_url
+engine = create_async_engine(DATABASE_URL, echo=False)
+
+AsyncSessionLocal = async_sessionmaker(
+    bind=engine,
+    autoflush=False,
+    autocommit=False,
+    expire_on_commit=False,
+    class_=AsyncSession,
+)
+
+Base = declarative_base()
+
+
+async def handle_session_exception(session: AsyncSession, exc: BaseException):
+    """
+    Общая утилита, вызываемая при ошибках в сессии:
+    - делаем rollback
+    - логируем traceback
+    """
+    logger.error(f"Exception in session: {exc}\n{traceback.format_exc()}")
+    await session.rollback()
+
+
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-        except Exception as e:
-            await session.rollback()
-            logger.error(f"Database session error: {e}")
-            raise
+    """ """
+    session = AsyncSessionLocal()
+    try:
+        yield session
+    except Exception as e:
+        logger.error(f"Database session error: {e}")
+        await session.rollback()
+        raise
+    finally:
+        await session.close()
