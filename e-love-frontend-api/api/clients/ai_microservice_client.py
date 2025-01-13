@@ -24,6 +24,11 @@ class AiMicroserviceClient:
             self._session = aiohttp.ClientSession()
         return self._session
 
+    async def close(self):
+        if self._session is not None:
+            await self._session.close()
+            self._session = None
+
     async def upload_users_data(self, csv_path: str) -> None:
         """
         Send users data to the ai-sevice
@@ -44,6 +49,8 @@ class AiMicroserviceClient:
                     return await response.json()
         except Exception as e:
             ExceptionHandler(e)
+        finally:
+            self.close()
 
     async def get_users_recommendations(
         self, current_user_data: Dict[str, Any]
@@ -58,6 +65,8 @@ class AiMicroserviceClient:
         url = f"{self.base_url}/matching-recommendations"
         session = await self._get_session()
 
+        print("final_url: ", url)
+
         try:
             async with session.post(url, json=current_user_data) as response:
                 response.raise_for_status()
@@ -65,3 +74,5 @@ class AiMicroserviceClient:
         except Exception as e:
             ExceptionHandler(e)
             return []
+        finally:
+            self.close()
